@@ -7,12 +7,12 @@ import {
 } from "@material-tailwind/react";
 import { useNavigate, Link } from "react-router-dom";
 import { useState, useEffect, useContext } from "react";
-import AuthContext from "@/context/authContext";
+import { AuthContext } from "@/context";
 
 console.log('Im in sign-in.jsx')
 
 export function SignIn() {
-  const { login, token } = useContext(AuthContext);
+  const { login, token } = useContext(AuthContext); //Manage Login and Token in the AuthContext file
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
@@ -20,7 +20,7 @@ export function SignIn() {
   // Redirect if already logged in
   useEffect(() => {
     if (token) {
-      navigate("/dashboard"); // Redirect to dashboard
+      navigate("/dashboard/*"); // Redirect to dashboard
     }
   }, [token, navigate]);
 

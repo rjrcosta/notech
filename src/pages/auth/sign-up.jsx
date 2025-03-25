@@ -15,13 +15,12 @@ export function SignUp() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-
   const navigate = useNavigate(); // Define navigate
 
   // Redirect logged-in users
   useEffect(() => {
     if (localStorage.getItem("token")) {
-      navigate("/dashboard/home"); // Redirect to dashboard/home
+      navigate("/dashboard/*"); // Redirect to dashboard/*
     }
   }, [navigate]);
 

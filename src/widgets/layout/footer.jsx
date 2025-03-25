@@ -5,6 +5,8 @@ import { HeartIcon } from "@heroicons/react/24/solid";
 export function Footer({ brandName, brandLink, routes }) {
   const year = new Date().getFullYear();
 
+  console.log("footer is rendering...");
+
   return (
     <footer className="py-2">
       <div className="flex w-full flex-wrap items-center justify-center gap-6 px-2 md:justify-between">

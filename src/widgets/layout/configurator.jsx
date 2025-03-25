@@ -46,6 +46,8 @@ export function Configurator() {
     controller;
   const [stars, setStars] = React.useState(0);
 
+  console.log("Configurator is rendering...");
+
   const sidenavColors = {
     white: "from-gray-100 to-gray-100 border-gray-200",
     dark: "from-black to-black border-gray-200",

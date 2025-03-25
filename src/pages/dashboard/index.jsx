@@ -41,19 +41,25 @@
 
 // export default Dashboard;
 
+export * from "@/pages/dashboard/user";
+export * from "@/pages/dashboard/admin";
+export * from "@/pages/dashboard/profile";
+export * from "@/pages/dashboard/tables";
+export * from "@/pages/dashboard/notifications";
+
 import { Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { useContext } from "react";
-import AuthContext from "../../context/authContext";
+import { AuthContext } from "@/context";
 import User from "./user";
 import Admin from "./admin";
 import Profile from "./profile";
 import Tables from "./tables";
 import Notifications from "./notifications";
 
-const Dashboard = () => {
+const IndexDashboard = () => {
   const { userId, userType } = useContext(AuthContext);
 
-  console.log("Dashboard Loaded - UserType:", userType, "UserID:", userId);
+  console.log("Dashboard Index Loaded - UserType:", userType, "UserID:", userId);
 
   // Check if userType and userId are set correctly
   if (!userType || !userId) {
@@ -101,5 +107,5 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default IndexDashboard;
 

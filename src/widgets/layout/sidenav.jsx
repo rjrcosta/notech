@@ -8,6 +8,8 @@ import {
   Typography,
 } from "@material-tailwind/react";
 import { useMaterialTailwindController, setOpenSidenav } from "@/context";
+import AdminOnly from "@/context/AdminOnly";
+import UserOnly from "@/context/UserOnly";
 
 export function Sidenav({ brandImg, brandName, routes }) {
   const [controller, dispatch] = useMaterialTailwindController();
@@ -17,6 +19,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
     white: "bg-white shadow-sm",
     transparent: "bg-transparent",
   };
+  console.log("SideNav is rendering...");
 
   return (
     <aside
@@ -32,7 +35,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
             variant="h6"
             color={sidenavType === "dark" ? "white" : "blue-gray"}
           >
-            {brandName}
+            {brandName} <p>efe</p>
           </Typography>
         </Link>
         <IconButton

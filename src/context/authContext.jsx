@@ -9,13 +9,17 @@ export const AuthProvider = ({ children }) => {
   const [userId, setUserId] = useState(localStorage.getItem("user_id") || null);
   const navigate = useNavigate();
 
+  console.log("I'm in the authContext");
+
+  // Effect to clean up localStorage and state on logout
   useEffect(() => {
     if (!token) {
+      // Remove items from localStorage only when token is null
       localStorage.removeItem("token");
       localStorage.removeItem("user_type");
       localStorage.removeItem("user_id");
     }
-  }, [token]);
+  }, [token]); // Effect triggers only when token changes
 
   const login = (token, userType, userId) => {
     setToken(token);
@@ -34,13 +38,15 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    setToken(null);
+    setToken(null);  // This will trigger useEffect to clean up localStorage
     setUserType(null);
     setUserId(null);
+
     localStorage.removeItem("token");
     localStorage.removeItem("user_type");
     localStorage.removeItem("user_id");
-    navigate("/login");
+
+    navigate("/auth/sign-in");  // Redirect to sign-in
   };
 
   return (
@@ -50,4 +56,4 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export default AuthContext;
+export { AuthContext };

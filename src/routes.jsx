@@ -7,7 +7,6 @@ import {
   RectangleStackIcon,
 } from "@heroicons/react/24/solid";
 import { Admin, User, Profile, Tables, Notifications } from "@/pages/dashboard"; // Corrected import
-import { SignIn, SignUp } from "@/pages/auth"; // Corrected import
 
 console.log('Im in routes')
 
@@ -45,35 +44,17 @@ export const routes = [
         name: "tables",
         path: "/tables",
         element: <Tables />,
-        role: ["admin, user"]
+        role: ["admin", "user"]
       },
       {
         icon: <InformationCircleIcon {...icon} />,
         name: "notifications",
         path: "/notifications",
         element: <Notifications />,
-        role: ["admin, user"]
+        role: ["admin", "user"]
       },
     ],
-  },
-  {
-    title: "auth pages",
-    layout: "auth",
-    pages: [
-      {
-        icon: <ServerStackIcon {...icon} />,
-        name: "sign in",
-        path: "/sign-in",
-        element: <SignIn />,
-      },
-      {
-        icon: <RectangleStackIcon {...icon} />,
-        name: "sign up",
-        path: "/sign-up",
-        element: <SignUp />,
-      },
-    ],
-  },
+  }
 ];
 
 export default routes;

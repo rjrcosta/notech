@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { SignIn } from "./pages/auth/sign-in";
 import { SignUp } from "./pages/auth/sign-up";
-import Dashboard from "./pages/dashboard";
+import { Dashboard, Auth } from "@/layouts";
 import { AuthProvider } from "./context/authContext";
 import PrivateRoute from "./ProtectedRoute";
 
@@ -15,7 +15,7 @@ function App() {
           <Route path="/auth/sign-up" element={<SignUp />} />
           
           {/* Protected Dashboard Route */}
-          <Route element={<PrivateRoute allowedRoles={["admin", "client"]} />}>
+          <Route element={<PrivateRoute allowedRoles={["admin", "user"]} />}>
             <Route path="/dashboard/*" element={<Dashboard />} />
           </Route>
 

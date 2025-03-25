@@ -1,7 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-
-export * from "@/context/authContext";
+export { AuthContext, AuthProvider } from "./authContext"; //
 
 export const MaterialTailwind = React.createContext(null);
 MaterialTailwind.displayName = "MaterialTailwindContext";

@@ -1,4 +1,5 @@
 import { useLocation, Link, useNavigate } from "react-router-dom"; // Import useNavigate
+import { useContext } from "react";
 import {
   Navbar,
   Typography,
@@ -24,7 +25,9 @@ import {
   useMaterialTailwindController,
   setOpenConfigurator,
   setOpenSidenav,
+  AuthContext
 } from "@/context";
+
 
 
 export function DashboardNavbar() {
@@ -33,15 +36,13 @@ export function DashboardNavbar() {
   const { pathname } = useLocation();
   const navigate = useNavigate(); // Define navigate
   const [layout, page] = pathname.split("/").filter((el) => el !== "");
+  
+  console.log("DashboardNavbar is rendering...");
 
-  console.log('Dashnavbar')
+  // Logout managed at the context level (authContext File)
+  const { logout } = useContext(AuthContext); // 🔹 Get logout function from context
 
-  const handleLogout = () => {
-    localStorage.removeItem("token"); // Clear the token
-    navigate("/auth/sign-in"); // Redirect to sign-in page
-  };
-
-  return (
+   return (
     <Navbar
       color={fixedNavbar ? "white" : "transparent"}
       className={`rounded-xl transition-all ${
@@ -65,7 +66,7 @@ export function DashboardNavbar() {
                 color="blue-gray"
                 className="font-normal opacity-50 transition-all hover:text-blue-500 hover:opacity-100"
               >
-                {layout}
+                 {layout}
               </Typography>
             </Link>
             <Typography
@@ -96,7 +97,7 @@ export function DashboardNavbar() {
             variant="text"
             color="blue-gray"
             className="hidden items-center gap-1 px-4 xl:flex normal-case"
-            onClick={handleLogout} // Call handleLogout on click
+            onClick={logout} // Call handleLogout on click
           >
             <UserCircleIcon className="h-5 w-5 text-blue-gray-500" />
             Log out
@@ -105,7 +106,7 @@ export function DashboardNavbar() {
             variant="text"
             color="blue-gray"
             className="grid xl:hidden"
-            onClick={handleLogout} // Call handleLogout on click
+            onClick={logout} // Call handleLogout on click
           >
             <UserCircleIcon className="h-5 w-5 text-blue-gray-500" />
           </IconButton>
@@ -116,7 +117,7 @@ export function DashboardNavbar() {
               </IconButton>
             </MenuHandler>
             <MenuList className="w-max border-0">
-              {/* Menu items */}
+              Menu items
             </MenuList>
           </Menu>
           <IconButton

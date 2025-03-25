@@ -1,6 +1,8 @@
 import React from "react";
 import PropTypes from "prop-types";
 
+export * from "@/context/authContext";
+
 export const MaterialTailwind = React.createContext(null);
 MaterialTailwind.displayName = "MaterialTailwindContext";
 
@@ -24,6 +26,12 @@ export function reducer(state, action) {
     case "OPEN_CONFIGURATOR": {
       return { ...state, openConfigurator: action.value };
     }
+    case "SET_LOGIN_STATUS": {
+      return { ...state, isLoggedIn: action.value };
+    }
+    case "SET_USER_TYPE": {
+      return { ...state, userType: action.value };
+    }
     default: {
       throw new Error(`Unhandled action type: ${action.type}`);
     }
@@ -38,6 +46,8 @@ export function MaterialTailwindControllerProvider({ children }) {
     transparentNavbar: true,
     fixedNavbar: false,
     openConfigurator: false,
+    isLoggedIn: false, // Add initial state for login status
+    userType: null, // Add initial state for user type
   };
 
   const [controller, dispatch] = React.useReducer(reducer, initialState);
@@ -83,3 +93,7 @@ export const setFixedNavbar = (dispatch, value) =>
   dispatch({ type: "FIXED_NAVBAR", value });
 export const setOpenConfigurator = (dispatch, value) =>
   dispatch({ type: "OPEN_CONFIGURATOR", value });
+export const setLoginStatus = (dispatch, value) =>
+  dispatch({ type: "SET_LOGIN_STATUS", value });
+export const setUserType = (dispatch, value) =>
+  dispatch({ type: "SET_USER_TYPE", value });

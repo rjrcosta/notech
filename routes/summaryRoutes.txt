@@ -1,0 +1,45 @@
+🚀 Summary of Routes:
+Users:
+
+/users - Get all users
+
+/users/:id - Get user by ID
+
+/users - Create a user
+
+/users/:id - Update a user
+
+/users/:id - Delete a user
+
+Crops:
+
+/crops - Get all crops
+
+/crops/:id - Get crop by ID
+
+/crops - Create a crop
+
+/crops/:id - Update a crop
+
+/crops/:id - Delete a crop
+
+Fields:
+
+/fields - Get all fields
+
+/fields/:id - Get field by ID
+
+/fields - Create a field
+
+/fields/:id - Update a field
+
+/fields/:id - Delete a field
+
+Infostations:
+
+/infostations - Get all info stations
+/infostations/:id - Get info station by ID
+/infostations - Create an info station
+/infostations/:id - Update an info station
+/infostations/:id - Delete an info station
+

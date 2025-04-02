@@ -9,22 +9,18 @@ function App() {
   console.log("I'm in App.js")
   return (
     <AuthProvider>
-        <Routes>
+      <Routes>
           {/* public Routes */}
           <Route path="/auth/sign-in" element={<SignIn />} />
           <Route path="/auth/sign-up" element={<SignUp />} />
           
-          {/* Protected Dashboard Route */}
-          <Route element={<PrivateRoute allowedRoles={["admin", "user"]} />}>
             <Route path="/dashboard/*" element={<Dashboard />} />
-          </Route>
-
+          
           {/* Default Route */}
           <Route path="*" element={<Navigate to="/auth/sign-in" />} />
-        </Routes>
+      </Routes>
     </AuthProvider>
   );
 }
 
 export default App;
-

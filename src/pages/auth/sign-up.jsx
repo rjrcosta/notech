@@ -17,36 +17,54 @@ export function SignUp() {
 
   const navigate = useNavigate(); // Define navigate
 
-  // Redirect logged-in users
-  useEffect(() => {
-    if (localStorage.getItem("token")) {
-      navigate("/dashboard/*"); // Redirect to dashboard/*
-    }
-  }, [navigate]);
+//  // Validation function
+//  const validate = () => {
+//   const errors = {}; // Local errors object
+//   if (!name) {
+//     errors.name = "Name is required";
+//   }
+//   if (!email) {
+//     errors.email = "Email is required";
+//   } else if (!/\S+@\S+\.\S+/.test(email)) {
+//     errors.email = "Email address is invalid";
+//   }
+//   if (!password) {
+//     errors.password = "Password is required";
+//   } else if (password.length < 6) {
+//     errors.password = "Password should be at least 6 characters";
+//   }
+//   setErrors(errors); // Update the errors state
+
+//   return Object.keys(errors).length === 0; // If no errors, return true
+// };
 
   const handleSubmit = async (e) => {
-
     e.preventDefault();
-    
+  
     try {
-      const response = await fetch('http://localhost:5000/register', {
+      const response = await fetch('http://localhost:5000/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-      body: JSON.stringify({ name, email, password }),
-
+        body: JSON.stringify({ name, email, password }),
       });
-      if (!response.ok) {
-        throw new Error('User registration failed');
+  
+      // Read response only once
+      const data = await response.json(); 
+
+      if(data) {
+        console.log("In Sign-up. User registered successfully:", data.user);
+
+        } else {
+        throw new Error(data.error || "User registration failed");
       }
-      // Handle successful registration (e.g., redirect or show a success message)
+  
     } catch (error) {
-      console.error(error);
-      // Handle error (e.g., show an error message)
+      console.error("Signup Error:", error.message);
     }
   };
-
+  
   return (
     <section className="m-8 flex">
       <div className="w-2/5 h-full hidden lg:block">
@@ -75,7 +93,7 @@ export function SignUp() {
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
-
+    
             <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">
               Your email
             </Typography>

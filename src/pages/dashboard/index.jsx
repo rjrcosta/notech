@@ -49,7 +49,7 @@ export * from "@/pages/dashboard/notifications";
 
 import { Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { useContext } from "react";
-import { AuthContext } from "@/context";
+// import { AuthContext } from "@/context";
 import User from "./user";
 import Admin from "./admin";
 import Profile from "./profile";

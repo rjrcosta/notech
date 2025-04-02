@@ -4,56 +4,79 @@ import { useNavigate } from "react-router-dom";
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [token, setToken] = useState(localStorage.getItem("token") || null);
-  const [userType, setUserType] = useState(localStorage.getItem("user_type") || null);
-  const [userId, setUserId] = useState(localStorage.getItem("user_id") || null);
   const navigate = useNavigate();
 
-  console.log("I'm in the authContext");
+  // Store authentication state in memory only
+  const [token, setToken] = useState(null);
+  const [user, setUser] = useState(null);
 
-  // Effect to clean up localStorage and state on logout
   useEffect(() => {
-    if (!token) {
-      // Remove items from localStorage only when token is null
-      localStorage.removeItem("token");
-      localStorage.removeItem("user_type");
-      localStorage.removeItem("user_id");
-    }
-  }, [token]); // Effect triggers only when token changes
+    // Check if user is logged in using an API call to the backend
+    const checkAuth = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/auth/session", {
+          method: "GET",
+          credentials: "include", // Send cookies with request
+        });
 
-  const login = (token, userType, userId) => {
+        if (response.ok) {
+          const data = await response.json();
+          console.log("Receiving data from auth/Session:");
+          console.log(data);
+          console.log("Token:", data.token);
+          console.log("User:", data.user);
+          setToken(data.token);
+          setUser(data.user);
+
+        } else {
+          setToken(null);
+          setUser(null);
+          // navigate("/auth/sign-in");
+        }
+      } catch (error) {
+        console.error("Error checking session:", error);
+        setToken(null);
+        setUser(null);
+        // navigate("/auth/sign-in");
+      }
+    };
+
+    checkAuth();
+  }, [navigate]);
+
+  const login = (token, user) => {
     setToken(token);
-    setUserType(userType);
-    setUserId(userId);
-    localStorage.setItem("token", token);
-    localStorage.setItem("user_type", userType);
-    localStorage.setItem("user_id", userId);
+    setUser(user);
+  };
+  
+  const logout = async () => {
+    try {
+      await fetch("http://localhost:5000/auth/logout", {
+        method: "POST",
+        credentials: "include", // Important for session-based auth
+      });
 
-    // Redirect based on user type
-    if (userType === "admin") {
-      navigate("/dashboard/admin");
-    } else {
-      navigate(`/dashboard/${userId}/user`);
+      // Clear state
+      setToken(null);
+      setUser(null);
+
+      // Redirect to login
+      navigate("/auth/sign-in");
+    } catch (error) {
+      console.error("Logout failed:", error);
     }
   };
 
-  const logout = () => {
-    setToken(null);  // This will trigger useEffect to clean up localStorage
-    setUserType(null);
-    setUserId(null);
-
-    localStorage.removeItem("token");
-    localStorage.removeItem("user_type");
-    localStorage.removeItem("user_id");
-
-    navigate("/auth/sign-in");  // Redirect to sign-in
-  };
+  console.log("AuthContext Loaded!");
+  console.log("Token:", token);
+  console.log("User:", user);
 
   return (
-    <AuthContext.Provider value={{ token, userType, userId, login, logout }}>
+    <AuthContext.Provider value={{token, user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-export { AuthContext };
+export default AuthContext;
+export {AuthContext}

@@ -14,6 +14,8 @@
     "apexcharts": "3.44.0",
     "bcryptjs": "^3.0.2",
     "dotenv": "^16.4.7",
+    "express-session": "^1.18.1",
+    "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.14.1",
     "prop-types": "15.8.1",

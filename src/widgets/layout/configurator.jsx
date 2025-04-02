@@ -15,6 +15,7 @@ import {
   setFixedNavbar,
 } from "@/context";
 
+
 function formatNumber(number, decPlaces) {
   decPlaces = Math.pow(10, decPlaces);
 

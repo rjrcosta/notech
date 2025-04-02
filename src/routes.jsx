@@ -23,35 +23,35 @@ export const routes = [
         name: "admin",
         path: "/admin",
         element: <Admin />,
-        role: ["admin"]
+        role: [1]
       },
       {
         icon: <HomeIcon {...icon} />,
         name: "user",
         path: "/user",
         element: <User />,
-        role: ["user"]
+        role: [3]
       },
       {
         icon: <UserCircleIcon {...icon} />,
         name: "profile",
         path: "/profile",
         element: <Profile />,
-        role: ["admin, user"]
+        role: [1,2,3,4,5]
       },
       {
         icon: <TableCellsIcon {...icon} />,
         name: "tables",
         path: "/tables",
         element: <Tables />,
-        role: ["admin", "user"]
+        role: [1,2,3,4,5]
       },
       {
         icon: <InformationCircleIcon {...icon} />,
         name: "notifications",
         path: "/notifications",
         element: <Notifications />,
-        role: ["admin", "user"]
+        role: [1,2,3,4,5]
       },
     ],
   }

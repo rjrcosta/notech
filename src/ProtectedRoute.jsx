@@ -1,38 +1,36 @@
 import React from "react";
 import { Navigate, useLocation, Outlet } from "react-router-dom";
-import { AuthProvider } from "./context/authContext";
+import { useContext } from "react";
+import { AuthContext } from "@/context";
 
-const ProtectedRoute = () => {
-  const token = localStorage.getItem("token");
-  const userType = localStorage.getItem("user_type");
-  const userId = localStorage.getItem("user_id");
-  const isLoggedIn = !!token;
-  const isLoggedOut = !token;
+const PrivateRoute = () => {
+  const {  token, user } = useContext(AuthContext);
+  const userId = user?.id;
+  const userRoleId = user?.user_role_id;
+
+  // if(token) {
+  //   const isLoggedIn = true;
+  //   if (isLoggedIn && (location.pathname === "/auth/sign-in" || location.pathname === "/auth/sign-up")) {
+  //     if (userRoleId === 1 || userRoleId === 2) {
+  //       return <Route path="/dashboard/*" element={<Dashboard />} />;
+  //     } else {
+  //       return <Navigate to="/dashboard/${userId}/user" replace />;
+  //     }
+  //   }
+  // }else {
+  //   const isLoggedOut = true;
+  //   return <Navigate to="/auth/sign-in" replace />;
+
+  // }
+
   const location = useLocation();
 
   console.log("🔹 PrivateRoute Loaded!");
   console.log("🔹 Token:", token);
-  console.log("🔹 UserType:", userType);
-  console.log("🔹 UserID:", userId);
-  console.log("🔹 Current Path:", location.pathname);
-
-  if (isLoggedOut) {
-    return <Navigate to="/auth/sign-in" replace />;
-  }
-
-  if (isLoggedIn && (location.pathname === "/auth/sign-in" || location.pathname === "/auth/sign-up")) {
-    if (userType === "admin") {
-      return <Route path="/dashboard/*" element={<Dashboard />} />;
-    } else {
-      return <Navigate to="/dashboard/${userId}/user" replace />;
-    }
-  }
+  console.log("🔹 User:", user);
 
   // ✅ Allow protected content to be rendered
   return <Outlet />;
 };
 
-export default ProtectedRoute;
-
-
-
+export default PrivateRoute;

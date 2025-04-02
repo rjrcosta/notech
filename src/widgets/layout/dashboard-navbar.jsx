@@ -24,9 +24,9 @@ import {
 import {
   useMaterialTailwindController,
   setOpenConfigurator,
-  setOpenSidenav,
-  AuthContext
+  setOpenSidenav
 } from "@/context";
+import { AuthContext } from "@/context";
 
 
 

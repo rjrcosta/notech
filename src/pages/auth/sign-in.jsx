@@ -7,46 +7,44 @@ import {
 } from "@material-tailwind/react";
 import { useNavigate, Link } from "react-router-dom";
 import { useState, useEffect, useContext } from "react";
-import { AuthContext } from "@/context";
+import { AuthProvider, AuthContext } from "@/context/authContext";
 
 console.log('Im in sign-in.jsx')
 
 export function SignIn() {
-  const { login, token } = useContext(AuthContext); //Manage Login and Token in the AuthContext file
+  const { login } = useContext(AuthContext); // Manage Login in the AuthContext file
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  // Redirect if already logged in
-  useEffect(() => {
-    if (token) {
-      navigate("/dashboard/*"); // Redirect to dashboard
-    }
-  }, [token, navigate]);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('Im in handleSubmit')
     try {
-      const response = await fetch("http://localhost:5000/login", {
+      const response = await fetch(`http://localhost:5000/auth/login`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ email, password }),
       });
 
+      // Read JSON once
+      const data = await response.json();
+      console.log("Receiving data from authRoute:", data);
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.msg || "User sign-in failed");
+        throw new Error(data.msg || "User sign-in failed");
       }
 
-      const data = await response.json();
-
       if (data.token && data.user) {
-        login(data.token, data.user.user_type, data.user.id); // Store user info
+        navigate("/dashboard"); // ✅ Redirect to dashboard after login
+        login(data.token, data.user.user_role_id, data.user.id); // Store user info
+        console.log("Sending Token and user data to AuthContext for login function",data.token, data.user.user_role_id, data.user.id)
       } else {
         console.error("Invalid response: Missing token or user data.");
       }
+
     } catch (error) {
       console.error("Sign-in error:", error);
     }

@@ -3,7 +3,10 @@ import jwt from 'jsonwebtoken';
 import pg from "pg"; //Postgres client
 import pool from '../db.js';
 import User from "../models/userModel.js";  // Adjust the path based on your project structure
+import dotenv from 'dotenv';
 
+
+dotenv.config(); // Load environment variables
 
 const db = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
@@ -20,8 +23,6 @@ const db = new pg.Pool({
       [name, email, hashedPassword]
     );
 
-    
-
     return new User(result.rows[0].name, result.rows[0].email, result.rows[0].password);
   }
 
@@ -36,26 +37,30 @@ export const loginUser = async (email, password) => {
       throw new Error('User does not exist');
     }
     
-    const user = result.rows[0];
+    const user = result.rows[0]; // Get the user from the result
 
     // Compare the password with the hashed password in the database
-    const isMatch = await bcryptjs.compare(password, user.password);
+    const isMatch = await bcryptjs.compare(password, user.password); // Use bcryptjs to compare passwords
     if (!isMatch) {
       throw new Error('Invalid credentials');
     }
 
-    // Generate a token
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    //
+    const payload = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.user_role_name,
+    };
 
-    console.log('In AuthModel', token, user.id, user.email, user.user_role_id)
+    // Generate a token with user information
+    // Note: Make sure to include the user information you need in the token payload
+    const token = jwt.sign({ payload }, process.env.JWT_SECRET, { expiresIn: '1h' }); // Adjust the expiration time as needed
     
-    return {
-      token,
-      user: {
-        id: user.id,
-        email: user.email,
-        user_role_id: user.user_role_id
-      }
+    console.log('In AuthModel', token)
+    
+    return {// Return the token
+      token: token, // Include the token in the response
     };
   } catch (err) {
     throw new Error(err.message);

@@ -9,6 +9,7 @@ import cropRoutes from "./routes/cropRoutes.js";
 import fieldRoutes from "./routes/fieldRoutes.js";  
 import infostationRoutes from "./routes/infostationRoutes.js";  
 import authRoutes from "./routes/authRoutes.js"; // Import auth routes
+import cookieParser from 'cookie-parser';
 
 dotenv.config(); // Load environment variables
 
@@ -20,6 +21,8 @@ app.use(cors({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use(cookieParser()); // Use cookie-parser middleware
 
 // Configure session middleware
 app.use(session({

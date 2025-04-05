@@ -6,8 +6,8 @@ import {
   Typography,
 } from "@material-tailwind/react";
 import { useNavigate, Link } from "react-router-dom";
-import { useState, useEffect, useContext } from "react";
-import { AuthProvider, AuthContext } from "@/context/authContext";
+import { useState, useContext } from "react";
+import {  AuthContext } from "@/context/authContext";
 
 console.log('Im in sign-in.jsx')
 
@@ -20,7 +20,8 @@ export function SignIn() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Im in handleSubmit')
+    console.log('Im in handleSubmit inside sign-in.jsx')
+    console.log("Sending data to authRoute for login function",email,password)
     try {
       const response = await fetch(`http://localhost:5000/auth/login`, {
         method: "POST",
@@ -37,12 +38,14 @@ export function SignIn() {
         throw new Error(data.msg || "User sign-in failed");
       }
 
-      if (data.token && data.user) {
-        navigate("/dashboard"); // ✅ Redirect to dashboard after login
-        login(data.token, data.user.user_role_id, data.user.id); // Store user info
-        console.log("Sending Token and user data to AuthContext for login function",data.token, data.user.user_role_id, data.user.id)
+      if (data) {
+        console.log("User sign-in successful:", data);
+        login({ user: data.user }); // Pass both token and user to the login function
+        navigate("/dashboard/user"); // Redirect to dashboard after login
+
       } else {
         console.error("Invalid response: Missing token or user data.");
+
       }
 
     } catch (error) {

@@ -1,8 +1,11 @@
 import express from 'express';
 import registerSchema from '../validationSchema.js';  // Import Joi schema
 import { registerUser, loginUser } from '../models/authModel.js'; // Import functions from the auth model
+import jwt from 'jsonwebtoken';
+
 
 const router = express.Router();
+
 
 //Create new User
 router.post("/register", async (req, res) => {
@@ -45,18 +48,16 @@ router.post("/login", async (req, res) => {
   console.log('Im in login route', email, password)
   
   try {
-    const { token, user } = await loginUser(email, password);
-    console.log('In AuthRoutes', token, user.id, user.email, user.user_role_id)
+    const { token } = await loginUser(email, password);
+    console.log('In AuthRoutes',token)
 
-    // Store user information in session
-    req.session.token = token; // Store user info in session
-    req.session.user = user; // Store user info in session
+    // Store the token in the session
+    req.session.token = token; // Store the token in the session
+    console.log('Token stored in session:', req.session.token);
 
-    //Redirect to dashboard 
-    // res.redirect("/dashboard/*"); // Redirect to the dashboard after successful login
-    
-    //Sends back the token and user information in the response
-    res.json({token, user });
+    const decoded = jwt.verify(req.session.token, process.env.JWT_SECRET); // Decode the token to get user information
+    console.log('Decoded token in session route:', decoded); // Log the decoded token information
+    res.status(200).json({ user: decoded }); // Send the decoded user information in the response
 
   } catch (err) {
     res.status(400).json({ msg: err.message });  // Send the error message to the client
@@ -65,20 +66,28 @@ router.post("/login", async (req, res) => {
 
 // Session Route (Check if user is logged in)
 router.get("/session", (req, res) => {
-  if (req.session.user && req.session.token) {
-    console.log('In authRoutes session:', req.session.user, req.session.token)
-    res.json({ user: req.session.user, token: req.session.token });
-  } else {
-      res.json({ user: null });
+  if (!req.session.token) {
+    console.log('No token found in session');
+    return res.status(401).json({ message: "Unauthorized enter" });
+  }
+
+  try {
+    const decoded = jwt.verify(req.session.token, process.env.JWT_SECRET);
+    console.log('Decoded token in session route:', decoded);
+    res.status(200).json({ user: decoded });
+  } catch (err) {
+    res.status(401).json({ message: "Invalid token" });
   }
 });
 
-// Logout Route (Clear session)
+
+// Logout route
 router.post("/logout", (req, res) => {
-  req.session.destroy();
-  res.json({ message: "Logged out successfully" });
+  req.session.destroy((err) => {
+    if (err) return res.status(500).json({ message: "Logout failed" });
+    res.clearCookie("connect.sid");
+    res.status(200).json({ message: "Logged out successfully" });
+  });
 });
-
-
 
 export default router;

@@ -1,13 +1,11 @@
 import { createContext, useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-
+import { useNavigate } from "react-router-dom"; // Only import once
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
 
   // Store authentication state in memory only
-  const [token, setToken] = useState(null);
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -23,32 +21,29 @@ export const AuthProvider = ({ children }) => {
           const data = await response.json();
           console.log("Receiving data from auth/Session:");
           console.log(data);
-          console.log("Token:", data.token);
           console.log("User:", data.user);
-          setToken(data.token);
-          setUser(data.user);
-
+          setUser(data.user);   // Set user data from response
+          console.log('User set in AuthContext-useEffect:', user);
         } else {
-          setToken(null);
-          setUser(null);
-          // navigate("/auth/sign-in");
+          setUser(null);  // Clear user data if session check fails
+          // navigate("/auth/sign-in");  // Uncomment to navigate if session is not valid
         }
       } catch (error) {
         console.error("Error checking session:", error);
-        setToken(null);
-        setUser(null);
-        // navigate("/auth/sign-in");
+        setUser(null);  // Clear user data if error occurs
+        // navigate("/auth/sign-in");  // Uncomment to navigate if error occurs
       }
     };
 
     checkAuth();
   }, [navigate]);
 
-  const login = (token, user) => {
-    setToken(token);
-    setUser(user);
+  // Function to set token and user data in state after login
+  const login = (userData) => {
+    setUser(userData.user);    // Save user in state
   };
-  
+
+  // Function to log out the user
   const logout = async () => {
     try {
       await fetch("http://localhost:5000/auth/logout", {
@@ -57,7 +52,6 @@ export const AuthProvider = ({ children }) => {
       });
 
       // Clear state
-      setToken(null);
       setUser(null);
 
       // Redirect to login
@@ -68,15 +62,14 @@ export const AuthProvider = ({ children }) => {
   };
 
   console.log("AuthContext Loaded!");
-  console.log("Token:", token);
   console.log("User:", user);
 
   return (
-    <AuthContext.Provider value={{token, user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-export default AuthContext;
-export {AuthContext}
+export default AuthProvider;
+export { AuthContext };

@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"; // Only import once
+
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -8,8 +9,7 @@ export const AuthProvider = ({ children }) => {
   // Store authentication state in memory only
   const [user, setUser] = useState(null);
 
-  useEffect(() => {
-    // Check if user is logged in using an API call to the backend
+  
     const checkAuth = async () => {
       try {
         const response = await fetch("http://localhost:5000/auth/session", {
@@ -19,9 +19,7 @@ export const AuthProvider = ({ children }) => {
 
         if (response.ok) {
           const data = await response.json();
-          console.log("Receiving data from auth/Session:");
-          console.log(data);
-          console.log("User:", data.user);
+          console.log("Receiving data from auth/Session:", data);
           setUser(data.user);   // Set user data from response
           console.log('User set in AuthContext-useEffect:', user);
         } else {
@@ -35,8 +33,11 @@ export const AuthProvider = ({ children }) => {
       }
     };
 
+
+  useEffect(() => {
+      // Check if user is logged in using an API call to the backend
     checkAuth();
-  }, [navigate]);
+  }, []);
 
   // Function to set token and user data in state after login
   const login = (userData) => {
@@ -65,7 +66,7 @@ export const AuthProvider = ({ children }) => {
   console.log("User:", user);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, checkAuth, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

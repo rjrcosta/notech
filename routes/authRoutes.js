@@ -22,15 +22,21 @@ router.post("/register", async (req, res) => {
   const { name, email, password  } = req.body;
 
   try {
-    const createdUser = await registerUser(name, email, password);
-    console.log('In AuthRoutes and just created a user. name:', createdUser.name,'email: ', createdUser.email,'password: ', createdUser.password)
+    const { token } = await registerUser(name, email, password);
+    console.log('In AuthRoutes and just created a user. token:', token )
     
     // Store user information in session
-    req.session.user = createdUser;
-    const sessionUser = sessionStorage.user // Store user info in session
-    console.log('session storage:', sessionUser);
-    res.json({ message: "On AuthRoutes. User stored in sessions successfully", sessionUser }); // Redirect to the dashboard after successful login
-
+    req.session.token = token; // Store the token in the session
+    req.session.save((err) => {
+      if (err) {
+        console.error("Session save error:", err);
+        return res.status(500).json({ error: "Failed to save session" });
+      }
+    
+      // Now it’s safe to respond
+      res.json({ message: "User stored in sessions successfully" });
+    });
+    
   } catch (err) {
     console.error("Error:", err);
     

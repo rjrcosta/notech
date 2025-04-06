@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
-
+import { useState, useContext } from "react";
+import { AuthContext  } from "@/context/authContext"; 
 
 import {
   Card,
@@ -11,32 +11,12 @@ import {
 } from "@material-tailwind/react";
 
 export function SignUp() {
+  
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
   const navigate = useNavigate(); // Define navigate
-
-//  // Validation function
-//  const validate = () => {
-//   const errors = {}; // Local errors object
-//   if (!name) {
-//     errors.name = "Name is required";
-//   }
-//   if (!email) {
-//     errors.email = "Email is required";
-//   } else if (!/\S+@\S+\.\S+/.test(email)) {
-//     errors.email = "Email address is invalid";
-//   }
-//   if (!password) {
-//     errors.password = "Password is required";
-//   } else if (password.length < 6) {
-//     errors.password = "Password should be at least 6 characters";
-//   }
-//   setErrors(errors); // Update the errors state
-
-//   return Object.keys(errors).length === 0; // If no errors, return true
-// };
+  const { checkAuth } = useContext(AuthContext);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -44,22 +24,24 @@ export function SignUp() {
     try {
       const response = await fetch('http://localhost:5000/auth/register', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ name, email, password }),
+        credentials: 'include', // Include cookies in the request
       });
   
       // Read response only once
       const data = await response.json(); 
 
       if(data) {
-        console.log("In Sign-up. User registered successfully:", data.user);
+        console.log('In Sign in page received data. Data: ', data);
 
+        await checkAuth(); // Check authentication status after registration
+
+        navigate("/dashboard/user"); // Redirect to dashboard after login
+  
         } else {
         throw new Error(data.error || "User registration failed");
       }
-  
     } catch (error) {
       console.error("Signup Error:", error.message);
     }

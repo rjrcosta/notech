@@ -18,12 +18,31 @@ const db = new pg.Pool({
     const  hashedPassword = await bcryptjs.hash(password, 12);
 
     console.log('Im in createUser function inside Usermodel ', hashedPassword)
+  
     const result = await db.query(
       "INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *",
       [name, email, hashedPassword]
     );
 
-    return new User(result.rows[0].name, result.rows[0].email, result.rows[0].password);
+    const newUser = result.rows[0]; // Get the newly created user from the result
+    console.log('In routhmodel newUser',newUser);
+
+    const payload = {
+      id: newUser.id,
+      name: newUser.name,
+      email: newUser.email,
+      role: newUser.user_role_name,
+    };
+    console.log('In AuthModel payload:', payload)
+
+    // Generate a token with user information
+    // Note: Make sure to include the user information you need in the token payload
+    const token = jwt.sign({ payload }, process.env.JWT_SECRET, { expiresIn: '1h' }); // Adjust the expiration time as needed
+
+    
+    console.log('In AuthModel', token)
+
+    return {token: token}; // Return the token
   }
 
 // Function to login a user

@@ -33,11 +33,9 @@ export function SignUp() {
       const data = await response.json(); 
 
       if(data) {
-        console.log('In Sign in page received data. Data: ', data);
+        console.log('In Sign up page received data. Data: ', data);
 
         await checkAuth(); // Check authentication status after registration
-
-        navigate("/dashboard/user"); // Redirect to dashboard after login
   
         } else {
         throw new Error(data.error || "User registration failed");

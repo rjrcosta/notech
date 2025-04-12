@@ -41,11 +41,10 @@ export function SignIn() {
       if (data) {
         console.log("User sign-in successful:", data);
         login({ user: data.user }); // Pass both token and user to the login function
-        navigate("/dashboard/user"); // Redirect to dashboard after login
+        navigate(data.redirectTo); // Redirect to the appropriate page based on user role
 
       } else {
         console.error("Invalid response: Missing token or user data.");
-
       }
 
     } catch (error) {

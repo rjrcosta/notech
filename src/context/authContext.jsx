@@ -8,6 +8,8 @@ export const AuthProvider = ({ children }) => {
 
   // Store authentication state in memory only
   const [user, setUser] = useState(null);
+  const [redirectTo, setRedirectTo] = useState(null); // State to manage redirection
+  
 
   
     const checkAuth = async () => {
@@ -21,15 +23,23 @@ export const AuthProvider = ({ children }) => {
           const data = await response.json();
           console.log("Receiving data from auth/Session:", data);
           setUser(data.user);   // Set user data from response
-          console.log('User set in AuthContext-useEffect:', user);
+          setRedirectTo(data.redirectTo); // Set redirect path based on user role
+          console.log("Redirect path set in AuthContext:", data.redirectTo);
+          console.log('User set in AuthContext-useEffect:', data.user);
+          navigate(data.redirectTo); // Redirect to the appropriate page based on user role
+
         } else {
           setUser(null);  // Clear user data if session check fails
-          // navigate("/auth/sign-in");  // Uncomment to navigate if session is not valid
+          setRedirectTo(null); // Clear redirect path
+          navigate("/auth/sign-in");  // Uncomment to navigate if session is not valid
         }
       } catch (error) {
         console.error("Error checking session:", error);
         setUser(null);  // Clear user data if error occurs
-        // navigate("/auth/sign-in");  // Uncomment to navigate if error occurs
+        setRedirectTo(null); // Clear redirect path
+
+        // Optionally navigate to login page or show an error message
+        navigate("/auth/sign-in");  // Uncomment to navigate if error occurs
       }
     };
 
@@ -38,6 +48,8 @@ export const AuthProvider = ({ children }) => {
       // Check if user is logged in using an API call to the backend
     checkAuth();
   }, []);
+
+  
 
   // Function to set token and user data in state after login
   const login = (userData) => {
@@ -66,7 +78,7 @@ export const AuthProvider = ({ children }) => {
   console.log("User:", user);
 
   return (
-    <AuthContext.Provider value={{ user, checkAuth, login, logout }}>
+    <AuthContext.Provider value={{ user,redirectTo, checkAuth, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

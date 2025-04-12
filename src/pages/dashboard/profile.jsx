@@ -52,16 +52,16 @@ export function Profile() {
               </div>
             </div>
             <div className="w-96">
-              <Tabs value="app">
+              <Tabs value="app" className="w-30">
                 <TabsHeader>
-                  <Tab value="app">
+                  {/* <Tab value="app">
                     <HomeIcon className="-mt-1 mr-2 inline-block h-5 w-5" />
                     App
                   </Tab>
                   <Tab value="message">
                     <ChatBubbleLeftEllipsisIcon className="-mt-0.5 mr-2 inline-block h-5 w-5" />
                     Message
-                  </Tab>
+                  </Tab> */}
                   <Tab value="settings">
                     <Cog6ToothIcon className="-mt-1 mr-2 inline-block h-5 w-5" />
                     Settings

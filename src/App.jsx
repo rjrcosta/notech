@@ -3,7 +3,7 @@ import { SignIn } from "./pages/auth/sign-in";
 import { SignUp } from "./pages/auth/sign-up";
 import { Dashboard, Auth } from "@/layouts";
 import { AuthProvider } from "./context/authContext";
-import PrivateRoute from "./ProtectedRoute";
+
 
 function App() {
   console.log("I'm in App.js")

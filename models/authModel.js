@@ -29,8 +29,6 @@ const db = new pg.Pool({
 
     const payload = {
       id: newUser.id,
-      name: newUser.name,
-      email: newUser.email,
       role: newUser.user_role_name,
     };
     console.log('In AuthModel payload:', payload)
@@ -67,8 +65,6 @@ export const loginUser = async (email, password) => {
     //
     const payload = {
       id: user.id,
-      name: user.name,
-      email: user.email,
       role: user.user_role_name,
     };
 

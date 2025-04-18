@@ -2,7 +2,8 @@ import pool from "../db.js";
 
 // Get all crops
 export const getCrops = async () => {
-  const { rows } = await pool.query("SELECT * FROM crops");
+  const { rows } = await pool.query("SELECT id, name, type, image_path, description FROM crops");
+  console.log("Crops fetched:", rows); // Log the fetched crops
   return rows;
 };
 

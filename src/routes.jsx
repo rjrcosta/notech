@@ -6,7 +6,7 @@ import {
   ServerStackIcon,
   RectangleStackIcon,
 } from "@heroicons/react/24/solid";
-import { Admin, User, Profile, Tables, Notifications } from "@/pages/dashboard"; // Corrected import
+import { Admin, User, Profile, UsersTables, AdminTables, Notifications, InfoStation, Fields, Crops  } from "@/pages/dashboard"; // Corrected import
 
 console.log('Im in routes')
 
@@ -20,14 +20,14 @@ export const routes = [
     pages: [
       {
         icon: <HomeIcon {...icon} />,
-        name: "admin",
+        name: "Dashboard",
         path: "/admin",
         element: <Admin />,
         role: ["super_admin", "admin"],
       },
       {
         icon: <HomeIcon {...icon} />,
-        name: "user",
+        name: "Dashboard",
         path: "/user",
         element: <User />,
         role: ["owner", "manager", "analyst"]
@@ -37,13 +37,41 @@ export const routes = [
         name: "profile",
         path: "/profile",
         element: <Profile />,
-        role: ["owner", "manager", "analyst", "super_admin", "admin"]
+        role: []
       },
       {
         icon: <TableCellsIcon {...icon} />,
-        name: "tables",
-        path: "/tables",
-        element: <Tables />,
+        name: "Tables",
+        path: "/admintables",
+        element: <AdminTables />,
+        role: ["super_admin", "admin"]
+      },
+      {
+        icon: <TableCellsIcon {...icon} />,
+        name: "Tables",
+        path: "/usertables",
+        element: <UsersTables />,
+        role: ["owner", "manager", "analyst"]
+      },
+      {
+        icon: <HomeIcon {...icon} />,
+        name: "Crops",
+        path: "/crops",
+        element: <Crops />,
+        role: ["owner", "manager", "analyst", "super_admin", "admin"]
+      },
+      {
+        icon: <HomeIcon {...icon} />,
+        name: "Fields",
+        path: "/fields",
+        element: <Fields />,
+        role: ["owner", "manager", "analyst", "super_admin", "admin"]
+      },
+      {
+        icon: <HomeIcon {...icon} />,
+        name: "Info Stations",
+        path: "/infostations",
+        element: <InfoStation />,
         role: ["owner", "manager", "analyst", "super_admin", "admin"]
       },
       {

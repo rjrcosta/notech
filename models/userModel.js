@@ -30,6 +30,21 @@ class User {
     return new User(result.rows[0].name, result.rows[0].email, result.rows[0].password);
   }
 
+  // ✅ Get all users
+  static async getAllUsers() {
+    const result = await db.query("SELECT id, name, email, user_role_name, tenant_id FROM users");
+
+    const users = result.rows.map(user => ({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.user_role_name,
+      tenant: user.tenant_id,
+    }));
+  
+    return users;
+  }
+
   // ✅ Find user by ID
   static async getUserById(id) {
     const result = await db.query("SELECT * FROM users WHERE id = $1", [id]);

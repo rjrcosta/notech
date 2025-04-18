@@ -1,4 +1,7 @@
 import express from "express";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+
 import {
   getFields,
   getFieldById,
@@ -7,11 +10,13 @@ import {
   deleteField,
 } from "../models/fieldModel.js";
 
+dotenv.config(); // Load environment variables
 const router = express.Router();
 
 // Get all fields
-router.get("/", async (req, res) => {
+router.get("/allfields", async (req, res) => {
   try {
+    console.log("In fieldRoutes getFields route. Request URL:"); // Log the request URL
     const fields = await getFields();
     res.json(fields);
   } catch (err) {
@@ -31,11 +36,24 @@ router.get("/:id", async (req, res) => {
 });
 
 // Create a new field
-router.post("/", async (req, res) => {
-  const { cropId, name, area } = req.body;
+router.post("/create", async (req, res) => {
+  console.log("In fieldRoutes createField route");
+  console.log("Incoming request body:", req.body); // Log the incoming request body
   try {
-    const field = await createField(cropId, name, area);
-    res.status(201).json(field);
+    const decoded = jwt.verify(req.session.token, process.env.JWT_SECRET);
+    const userTenant_id = decoded.payload.tenant_id; // Extract the user role from the decoded token
+    const userId = decoded.payload.id; // Extract the user ID from the decoded token
+    console.log('Decoded token in session route:', userId, userTenant_id); // Log the decoded token information
+
+    const fullPayload = {
+      ...req.body,
+      userId,
+      userTenant_id,
+    };
+    console.log("Full payload to be sent to createField:", fullPayload); // Log the full payload
+
+    const newfield = await createField(fullPayload);
+    res.status(201).json(newfield);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

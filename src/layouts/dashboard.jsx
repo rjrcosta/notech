@@ -34,11 +34,6 @@ export function Dashboard() {
     return <Navigate to={redirectTo} replace />;
   }
 
-  // // ✅ Filter routes based on user role
-  // const filteredRoutes = routes.filter(
-  //   ({ role }) => !role || role.includes(userRoleId) // Allow routes with no role or matching role
-  // );
-
    // Filter routes based on user role
    const filteredRoutes = routes.filter(({ role }) => {
     if (!role) return true; // If no role defined, show the route to everyone

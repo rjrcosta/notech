@@ -3,36 +3,10 @@ import registerSchema from '../validationSchema.js';  // Import Joi schema
 import { registerUser, loginUser } from '../models/authModel.js'; // Import functions from the auth model
 import jwt from 'jsonwebtoken';
 import pkg from 'react-router-dom';
-import { authorizeRoles } from '../src/MiddleWare/authMiddleware.js';
+import {getRedirectPath } from '../src/MiddleWare/authMiddleware.js';
 const { redirectTo } = pkg;
 
 const router = express.Router();
-
-
-// Middleware to check if user is logged in and has the right role and is redirected correctly
-const adminRoles = ["super_admin", "admin"];
-const userRoles = ["owner", "manager", "analyst"];
-
-function getRedirectPath(role, currentPath) {
-  if (role) {
-    if (adminRoles.includes(role)) {
-      if (currentPath === "/dashboard/user") { // Check if the user is trying to access the user dashboard
-        return "/dashboard/admin"; // Redirect to admin dashboard if user is an admin   
-      }
-      return "/dashboard/admin";
-    }
-
-    if (userRoles.includes(role)) {
-      if (currentPath === "/dashboard/admin") { // Check if the user is trying to access the admin
-        return "/dashboard/user"; // Redirect to user dashboard if user is a user 
-      }
-      return "/dashboard/user";
-    }
-  }
-  else {
-    return "/auth/sign-in"; // Redirect to sign-in page if no role is found
-  }
-}
 
 
 //Create new User
@@ -82,8 +56,7 @@ router.post("/login", async (req, res) => {
   const currentPath = req.query.currentPath; // frontend sends this
 
   const { email, password } = req.body;
-  // const adminRoles = ["super_admin", "admin"];
-  // const userRoles = ["owner", "manager", "analyst"];
+
   console.log('Im in login route', email, password)
 
   try {
@@ -150,16 +123,6 @@ router.post("/logout", (req, res) => {
   });
 });
 
-
-// Example protected routes
-// These routes require authentication and authorization
-router.get("/admin", authorizeRoles(["admin", "super_admin"]), (req, res) => {
-  res.json({ message: "Welcome to the admin dashboard", user: req.user });
-});
-
-router.get("/user", authorizeRoles(["owner", "manager", "analyst"]), (req, res) => {
-  res.json({ message: "Welcome to the user dashboard", user: req.user });
-});
 
 
 export default router;

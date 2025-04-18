@@ -9,15 +9,18 @@ import {
 
 const router = express.Router();
 
-router.get("/", async (req, res) => {
+// Get all crops
+router.get("/allcrops", async (req, res) => {
   try {
     const crops = await getCrops();
+    console.log("Crops fetched:", crops); // Log the fetched crops
     res.json(crops);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
+// Get crop by ID
 router.get("/:id", async (req, res) => {
   try {
     const crop = await getCropById(req.params.id);
@@ -28,6 +31,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+// Create new crop
 router.post("/", async (req, res) => {
   const { clientId, name, type } = req.body;
   try {
@@ -38,6 +42,7 @@ router.post("/", async (req, res) => {
   }
 });
 
+// Update an existing crop
 router.put("/:id", async (req, res) => {
   const { name, type } = req.body;
   try {
@@ -48,6 +53,7 @@ router.put("/:id", async (req, res) => {
   }
 });
 
+// Delete a crop
 router.delete("/:id", async (req, res) => {
   try {
     await deleteCrop(req.params.id);

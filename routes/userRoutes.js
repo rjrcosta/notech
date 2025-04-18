@@ -1,21 +1,16 @@
 import express from "express";
 import User from "../models/userModel.js";
-import pg from "pg";
-import bcryptjs from "bcryptjs";
 import dotenv from "dotenv";
+import { getRedirectPath, authorizeAdmin, authorizeUser  } from "../src/MiddleWare/authMiddleware.js"; // Adjust the import path as needed
 
 dotenv.config();
-
-const db = new pg.Pool({
-  connectionString: process.env.DATABASE_URL,
-});
 
 const router = express.Router();
 
 //Get All users route
-router.get("/", async (req, res) => {
+router.get("/allusers",authorizeAdmin, async (req, res) => {
   try {
-    const users = await getUsers();
+    const users = await User.getAllUsers();
     res.json(users);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -56,7 +51,7 @@ router.post("/newuser", async (req, res) => {
 
 
 //Update an existing user 
-router.put("/:id", async (req, res) => {
+router.put("/:id", authorizeAdmin, async (req, res) => {
   const { name, email, user_role_id } = req.body;
   try {
     const user = await User.updateUser(req.params.id, name, email, user_role_id);

@@ -5,7 +5,6 @@ import pool from '../db.js';
 import User from "../models/userModel.js";  // Adjust the path based on your project structure
 import dotenv from 'dotenv';
 
-
 dotenv.config(); // Load environment variables
 
 const db = new pg.Pool({
@@ -30,6 +29,7 @@ const db = new pg.Pool({
     const payload = {
       id: newUser.id,
       role: newUser.user_role_name,
+      tenant_id: newUser.tenant_id,
     };
     console.log('In AuthModel payload:', payload)
 
@@ -66,6 +66,7 @@ export const loginUser = async (email, password) => {
     const payload = {
       id: user.id,
       role: user.user_role_name,
+      tenant_id: user.tenant_id,
     };
 
     // Generate a token with user information

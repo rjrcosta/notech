@@ -21,8 +21,11 @@ import {
 import { Link } from "react-router-dom";
 import { ProfileInfoCard, MessageCard } from "@/widgets/cards";
 import { platformSettingsData, conversationsData, projectsData } from "@/data";
+import { useState } from "react";
 
 export function Profile() {
+  const [activeTable, setActiveTable] = useState("info");
+
   return (
     <>
       <div className="relative mt-8 h-72 w-full overflow-hidden rounded-xl bg-[url('/img/background-image.png')] bg-cover	bg-center">
@@ -52,17 +55,17 @@ export function Profile() {
               </div>
             </div>
             <div className="w-96">
-              <Tabs value="app" className="w-30">
+              <Tabs value={activeTable} className="w-30">
                 <TabsHeader>
-                  {/* <Tab value="app">
+                  <Tab value="info" onClick={() => setActiveTable("info")}>
                     <HomeIcon className="-mt-1 mr-2 inline-block h-5 w-5" />
-                    App
+                    User info
                   </Tab>
-                  <Tab value="message">
+                  <Tab value="message" onClick={() => setActiveTable("message")}>
                     <ChatBubbleLeftEllipsisIcon className="-mt-0.5 mr-2 inline-block h-5 w-5" />
                     Message
-                  </Tab> */}
-                  <Tab value="settings">
+                  </Tab> 
+                  <Tab value="settings" onClick={() => setActiveTable("settings")}>
                     <Cog6ToothIcon className="-mt-1 mr-2 inline-block h-5 w-5" />
                     Settings
                   </Tab>
@@ -71,6 +74,8 @@ export function Profile() {
             </div>
           </div>
           <div className="gird-cols-1 mb-12 grid gap-12 px-4 lg:grid-cols-2 xl:grid-cols-3">
+
+          {activeTable === "settings" && (
             <div>
               <Typography variant="h6" color="blue-gray" className="mb-3">
                 Platform Settings
@@ -98,6 +103,9 @@ export function Profile() {
                 ))}
               </div>
             </div>
+          )}
+
+          {activeTable === "info" && (
             <ProfileInfoCard
               title="Profile Information"
               description="Hi, I'm Alec Thompson, Decisions: If you can't decide, the answer is no. If two equally difficult paths, choose the one more painful in the short term (pain avoidance is creating an illusion of equality)."
@@ -120,6 +128,9 @@ export function Profile() {
                 </Tooltip>
               }
             />
+          )}
+
+          {activeTable === "message" && (
             <div>
               <Typography variant="h6" color="blue-gray" className="mb-3">
                 Platform Settings
@@ -138,6 +149,8 @@ export function Profile() {
                 ))}
               </ul>
             </div>
+          )}
+
           </div>
           <div className="px-4 pb-4">
             <Typography variant="h6" color="blue-gray" className="mb-2">

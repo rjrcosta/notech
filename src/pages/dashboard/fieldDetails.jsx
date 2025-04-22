@@ -1,3 +1,4 @@
+import React from "react";
 import {
   Card,
   CardHeader,
@@ -9,32 +10,45 @@ import {
   DialogHeader,
   DialogFooter,
   IconButton,
-  Input,
+  Switch,
   Select,
-  Textarea,
   Option,
   Button,
 } from "@material-tailwind/react";
-import { Link } from "react-router-dom";
+import {
+  statisticsCardsData,
+  statisticsChartsData,
+  projectsTableData,
+  ordersOverviewData,
+} from "@/data";
+import { CheckCircleIcon, ClockIcon } from "@heroicons/react/24/solid";
+import { StatisticsCard } from "@/widgets/cards";
+import { StatisticsChart } from "@/widgets/charts";
+import { Link, useLocation } from "react-router-dom";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { TileLayer, MapContainer, FeatureGroup, GeoJSON, useMap } from "react-leaflet";
 import { EditControl } from "react-leaflet-draw";
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
-import html2canvas from "html2canvas"; // ✅
 import { useEffect, useState, useRef } from "react";
+import {sensorTypeData} from "@/data/sensor-type-data.js";
 
+export function FieldDetails() {
+  const [sensors, setSensors] = useState([]); // State to store sensors data
+  const location = useLocation();
+  const fieldId = location.state?.fieldId; // Get the fieldId from the location state
+  console.log("Field ID from location state:", fieldId); // Log the fieldId to check if it's being passed correctly
 
-export function Fields() {
+  const [field, setField] = useState([]);
 
-  const [fields, setFields] = useState([]);
   const [crops, setCrops] = useState([]); // State to store crops data
-  const drawnGeoJsonRef = useRef(null); // Ref to store the drawn GeoJSON
+  // const drawnGeoJsonRef = useRef(null); // Ref to store the drawn GeoJSON
   const mapRef = useRef(); // Ref to store the map instance
   const [polygonGeoJSON, setPolygonGeoJSON] = useState(null);
 
   const [formData, setFormData] = useState({
     name: "",
+    sensorCount: 0,
     crop_id: "",
     client_id: "",
     tenant_id: "",
@@ -75,6 +89,7 @@ export function Fields() {
 
       const payload = {
         name: formData.name,
+
         crop_id: formData.crop_id,
         description: formData.description,
         area: JSON.stringify(polygonGeoJSON), // Convert GeoJSON to a string
@@ -105,24 +120,22 @@ export function Fields() {
   };
 
   useEffect(() => {
-    async function fetchFields() {
+    async function fetchField() {
       try {
-        const res = await fetch(`http://localhost:5000/fields/allfields`, {
+        const res = await fetch(`http://localhost:5000/fields/${fieldId}`, {
           method: 'GET',
           credentials: 'include', // Include cookies with the request
         }); // Adjust if needed
-        const fields = await res.json();
-        setFields(fields);
-        const formatted = fields.map(field => ({
+        const field = await res.json();
+        setField(field);
+        const formatted = field.map(field => ({
           id: field.id,
           name: field.name,
-          image_path: field.image_polygon_url,
           area: field.area,
           description: field.description,
           crop_id: field.crop_id,
-          type: field.type,
         }));
-        setFields(formatted);
+        setField(formatted);
       } catch (err) {
         console.error("Failed to fetch fields", err);
       }
@@ -148,11 +161,15 @@ export function Fields() {
         console.error("Failed to fetch crops", err);
       }
     }
-    fetchCrops();
-    fetchFields();
-  }, []);
 
-  const geojson = JSON.stringify(polygonGeoJSON); // Convert the polygonGeoJSON to a string for the FitBounds component
+    fetchCrops();
+    fetchField();
+  }, []); // Add map to dependencies
+
+  //define the geojson variable to be used in the FitBounds component
+  const geojson = field?.area
+  console.log("GeoJSON data:", geojson); // Log the GeoJSON data to check if it's being fetched correctly
+
   const FitBounds = ({ geojson }) => {
     const map = useMap();
 
@@ -165,15 +182,13 @@ export function Fields() {
     return null;
   };
 
-
-
   //Create new field button
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(!open);
 
   console.log("Fields data:", formData); // Log the fields data to check if it's being fetched correctly
   console.log("Crops data1:", crops); // Log the crops data to check if it's being fetched correctly
-  console.log("All Fields:", fields); // Log the fields data to check if it's being fetched correctly
+  console.log("All Fields:", field); // Log the fields data to check if it's being fetched correctly
 
   return (
     <div className="mt-12 mb-8 flex flex-col gap-12">
@@ -182,27 +197,27 @@ export function Fields() {
         <CardHeader variant="gradient" color="white" className="mb-8 flex items-center justify-between p-6">
           <div>
             <Typography variant="h6" color="blue-gray" className="mb-2">
-              Fields
+              Field Detail
             </Typography>
             <Typography
               variant="small"
               className="font-normal text-blue-gray-500"
             >
-              Types of fields available in the system
+              Detail information about this field
             </Typography>
           </div>
 
           <Button onClick={handleOpen} variant="gradient">
-            Add Field
+            Add Sensor Stations
           </Button>
           <Dialog size="sm" open={open} handler={handleOpen} className="p-4 overflow-auto max-h-screen">
             <form onSubmit={handleSubmit}>
               <DialogHeader className="relative m-0 block">
                 <Typography variant="h4" color="blue-gray">
-                  Create New Field
+                  Add Sensor Stations
                 </Typography>
                 <Typography className="mt-1 font-normal text-gray-600">
-                  Add information as accurate as possible to create a new field.
+                  Select the number and type of info Stations.
                 </Typography>
                 <IconButton
                   size="sm"
@@ -221,58 +236,52 @@ export function Fields() {
                     color="blue-gray"
                     className="mb-2 text-left font-medium"
                   >
-                    Name
-                  </Typography>
-                  <Input
-                    required
-                    color="gray"
-                    size="lg"
-                    placeholder="eg. White Shoes"
-                    name="name"
-                    className="placeholder:opacity-100 focus:!border-t-gray-900"
-                    containerProps={{
-                      className: "!min-w-full",
-                    }}
-                    labelProps={{
-                      className: "hidden",
-                    }}
-                    value={formData.name}
-                    onChange={handleInputChange}
-                  />
-                </div>
-
-                <div>
-                  <Typography
-                    variant="small"
-                    color="blue-gray"
-                    className="mb-2 text-left font-medium"
-                  >
-                    Crop
+                    Quantity
                   </Typography>
                   <Select
-                    className="!w-full !border-[1.5px] !border-blue-gray-200/90 !border-t-blue-gray-200/90 bg-white text-gray-800 ring-4 ring-transparent placeholder:text-gray-600 focus:!border-primary focus:!border-t-blue-gray-900 group-hover:!border-primary"
-                    placeholder="1"
-                    menuProps={{ className: "z-[9999]" }}
-                    required
-                    name="crop_id"
-                    labelProps={{
-                      className: "hidden",
-                    }}
-                    value={formData.crop_id}
+                    name="sensorCount"
+                    id="sensorCount"
+                    value={formData.sensorCount}
                     onChange={handleSelectChange}
-                  >
-
-                    <Option value="">-- Choose a crop --</Option>
-                    {crops.map(crop => (
-                      <Option key={crop.id} value={crop.id}>
-                        {crop.name}
+                    className="!border-[1.5px] !border-blue-gray-200/90 !border-t-blue-gray-200/90 bg-white text-gray-600 ring-4 ring-transparent focus:!border-primary focus:!border-t-blue-gray-900 group-hover:!border-primary">
+                    {[...Array(10)].map((_, sensorCount) => (
+                      <Option key={sensorCount + 1} value={sensorCount + 1}>
+                        {sensorCount + 1}
                       </Option>
                     ))}
                   </Select>
                 </div>
 
-                <div ref={mapRef} id="map-container">
-                  <MapContainer center={[41.355001, -8.627920]} zoom={13} scrollWheelZoom={true}>
+                <div>
+                  <Typography variant="h6" color="blue-gray" className="mb-3">
+                    Sensor options
+                  </Typography>
+                  <div className="flex flex-col gap-12">
+                    {sensorTypeData.map(({ title, options }) => (
+                      <div key={title}>
+                        <Typography className="mb-4 block text-xs font-semibold uppercase text-blue-gray-500">
+                          {title}
+                        </Typography>
+                        <div className="flex flex-col gap-6">
+                          {options.map(({ checked, label }) => (
+                            <Switch
+                              key={label}
+                              id={label}
+                              label={label}
+                              defaultChecked={checked}
+                              labelProps={{
+                                className: "text-sm font-normal text-blue-gray-500",
+                              }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* <div ref={mapRef} id="map-container">
+                  <MapContainer center={[41.355001, -8.627920]} zoom={13} scrollWheelZoom={false}>
                     <FeatureGroup>
                       <EditControl
                         position='topright'
@@ -285,6 +294,7 @@ export function Fields() {
                           marker: false,
                           circlemarker: false,
                         }}
+                      
                       />
                     </FeatureGroup>
 
@@ -294,28 +304,9 @@ export function Fields() {
                       crossOrigin="anonymous"
                     />
                   </MapContainer>
-                </div>
+                </div> */}
 
-                <div>
-                  <Typography
-                    variant="small"
-                    color="blue-gray"
-                    className="mb-2 text-left font-medium"
-                  >
-                    Description (Optional)
-                  </Typography>
-                  <Textarea
-                    name="description"
-                    rows={7}
-                    placeholder="eg. This is a white shoes with a comfortable sole."
-                    className="!w-full !border-[1.5px] !border-blue-gray-200/90 !border-t-blue-gray-200/90 bg-white text-gray-600 ring-4 ring-transparent focus:!border-primary focus:!border-t-blue-gray-900 group-hover:!border-primary"
-                    labelProps={{
-                      className: "hidden",
-                    }}
-                    value={formData.description}
-                    onChange={handleInputChange}
-                  />
-                </div>
+
               </DialogBody>
               <DialogFooter>
                 <Button type="submit" className="ml-auto" onClick={handleOpen}>
@@ -326,79 +317,120 @@ export function Fields() {
           </Dialog>
 
         </CardHeader>
-        <CardBody className="max-h-screen overflow-auto">
-          <div className="px-4 pb-4">
 
-            <div className="mt-6 grid grid-cols-1 gap-12 md:grid-cols-2 xl:grid-cols-4 ">
-              {fields.map(
+        <CardBody>
+          <div className="mb-6 grid grid-cols-1 gap-y-12 gap-x-6 md:grid-cols-2 xl:grid-cols-2">
+            <MapContainer center={[41.355001, -8.627920]} zoom={13} scrollWheelZoom={true}>
+              <FeatureGroup>
+                <EditControl
+                  position='topright'
+                  onCreated={handlePolygonCreated}
+                  draw={{
+                    rectangle: false,
+                    polyline: false,
+                    polygon: true,
+                    circle: false,
+                    marker: false,
+                    circlemarker: false,
+                  }}
+                />
+              </FeatureGroup>
+
+              <TileLayer
+                attribution='&copy; <a href="https://tiles.stadiamaps.com/tiles/alidade_satellite/{z}/{x}/{y}{r}.{ext}">StadiaMaps</a> contributors'
+                url="https://tiles.stadiamaps.com/tiles/alidade_satellite/{z}/{x}/{y}{r}.jpg"
+                crossOrigin="anonymous"
+              />
+              {field?.area && (
+                <>
+                  <GeoJSON data={field.area} style={{ color: "blue", weight: 2 }} />
+                  {/* Auto-fit bounds */}
+                  <FitBounds geojson={field.area} />
+                </>
+              )}
+            </MapContainer>
+
+            <div className=" grid gap-y-10 gap-x-6 md:grid-cols-1 xl:grid-cols-2">
+              {statisticsCardsData.map(({ icon, title, footer, ...rest }) => (
+                <StatisticsCard
+                  key={title}
+                  {...rest}
+                  title={title}
+                  icon={React.createElement(icon, {
+                    className: "w-6 h-6 text-white",
+                  })}
+                  footer={
+                    <Typography className="font-normal text-blue-gray-600">
+                      <strong className={footer.color}>{footer.value}</strong>
+                      &nbsp;{footer.label}
+                    </Typography>
+                  }
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="mb-6 grid grid-cols-1 gap-y-12 gap-x-6 md:grid-cols-2 xl:grid-cols-3">
+            {statisticsChartsData.map((props) => (
+              <StatisticsChart
+                key={props.title}
+                {...props}
+                footer={
+                  <Typography
+                    variant="small"
+                    className="flex items-center font-normal text-blue-gray-600"
+                  >
+                    <ClockIcon strokeWidth={2} className="h-4 w-4 text-blue-gray-400" />
+                    &nbsp;{props.footer}
+                  </Typography>
+                }
+              />
+            ))}
+          </div>
+
+          <div className="px-4 pb-4">
+            <div className="mt-6 grid grid-cols-1 gap-12 md:grid-cols-2 xl:grid-cols-4">
+              {sensors.map(
                 ({ id, image_path, area, name, description }) => (
                   <Card key={name} color="transparent" shadow={false}>
                     <CardHeader
                       floated={false}
                       color="gray"
-                      className="mx-0 mt-0 mb-4 h-64 xl:h-40 flex justify-center items-center sm:h-auto"
+                      className="mx-0 mt-0 mb-4 h-64 xl:h-40"
                     >
-                      <MapContainer
-                        center={[41.355001, -8.627920]}
-                        zoom={50}
-                        scrollWheelZoom={false}
-                        zoomControl={false} // Hides the zoom +/- buttons
-                        doubleClickZoom={false}
-                        dragging={false}
-                        touchZoom={false}
-                        keyboard={false}
-                      >
-                        <TileLayer
-                          attribution='&copy; <a href="https://tiles.stadiamaps.com/tiles/alidade_satellite/{z}/{x}/{y}{r}.{ext}">StadiaMaps</a> contributors'
-                          url="https://tiles.stadiamaps.com/tiles/alidade_satellite/{z}/{x}/{y}{r}.jpg"
-                          crossOrigin="anonymous"
-                        />
-                        {area && (
-                          <>
-                            <GeoJSON data={area} style={{ color: "blue", weight: 2 }} />
-                            {/* Auto-fit bounds */}
-                            <FitBounds geojson={area} />
-                          </>
-                        )}
-                      </MapContainer>
+                      <img
+                        src={image_path}
+                        alt={name}
+                        className="h-full w-full object-cover"
+                      />
                     </CardHeader>
-
-                    <CardBody className="py-0 px-1 flex items-center justify-between">
-                      <div>
-                        {/* <Typography
+                    <CardBody className="py-0 px-1">
+                      <Typography
                         variant="small"
                         className="font-normal text-blue-gray-500"
                       >
                         {name}
-                      </Typography> */}
-                        <Typography
-                          variant="h5"
-                          color="blue-gray"
-                          className="mt-1 mb-2"
-                        >
-                          {name}
-                        </Typography>
-                        <Typography
-                          variant="small"
-                          className="font-normal text-blue-gray-500"
-                        >
-                          {description}
-                        </Typography>
-                      </div>
-                      <div>
-                        <Link to={`/dashboard/fields/fieldDetails`} state={{ fieldId: id }}>
-                          <Button variant="outlined" size="sm">
-                            Details
-                          </Button>
-                        </Link>
-                      </div>
+                      </Typography>
+                      <Typography
+                        variant="h5"
+                        color="blue-gray"
+                        className="mt-1 mb-2"
+                      >
+                        {name}
+                      </Typography>
+                      <Typography
+                        variant="small"
+                        className="font-normal text-blue-gray-500"
+                      >
+                        {description}
+                      </Typography>
                     </CardBody>
                     <CardFooter className="mt-6 flex items-center justify-between py-0 px-1">
-                      {/* <Link to={`/dashboard/fields/fieldDetails`} state={{ fieldId: id }}>
+                      <Link to={`/dashboard/fields/${id}`}>
                         <Button variant="outlined" size="sm">
                           Details
                         </Button>
-                      </Link> */}
+                      </Link>
                       {/* <div> */}
                       {/* {members.map(({ img, name }, key) => (
                                       <Tooltip key={name} content={name}>
@@ -427,4 +459,4 @@ export function Fields() {
   );
 }
 
-export default Fields;
+export default FieldDetails

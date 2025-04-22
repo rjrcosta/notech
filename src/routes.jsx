@@ -6,7 +6,8 @@ import {
   ServerStackIcon,
   RectangleStackIcon,
 } from "@heroicons/react/24/solid";
-import { Admin, User, Profile, UsersTables, AdminTables, Notifications, InfoStation, Fields, Crops  } from "@/pages/dashboard"; // Corrected import
+import { Admin, User, Profile, UsersTables, AdminTables, Notifications, InfoStation, Fields, FieldDetails, Crops  } from "@/pages/dashboard"; // Corrected import
+
 
 console.log('Im in routes')
 
@@ -69,17 +70,24 @@ export const routes = [
       },
       {
         icon: <HomeIcon {...icon} />,
+        name: "Fields Details",
+        path: "/fields/fieldDetails",
+        element: <FieldDetails />,
+        role: []
+      },
+      {
+        icon: <HomeIcon {...icon} />,
         name: "Info Stations",
         path: "/infostations",
         element: <InfoStation />,
-        role: ["owner", "manager", "analyst", "super_admin", "admin"]
+        role: []
       },
       {
         icon: <InformationCircleIcon {...icon} />,
         name: "notifications",
         path: "/notifications",
         element: <Notifications />,
-        role: ["owner", "manager", "analyst", "super_admin", "admin"]
+        role: []
       },
     ],
   }

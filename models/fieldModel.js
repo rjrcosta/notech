@@ -12,7 +12,7 @@ export const getFields = async () => {
 
 // Get field by ID
 export const getFieldById = async (id) => {
-  const { rows } = await pool.query("SELECT * FROM fields WHERE id = $1", [id]);
+  const { rows } = await pool.query("SELECT crop_id, name, area, description  FROM fields WHERE id = $1", [id]);
   return rows[0];
 };
 

@@ -386,7 +386,7 @@ export function Fields() {
                         </Typography>
                       </div>
                       <div>
-                        <Link to={`/dashboard/fields/fieldDetails`} state={{ fieldId: id }}>
+                        <Link to={`/dashboard/fields/fieldDetails`} state={{ fieldId: id, fieldArea:area }}>
                           <Button variant="outlined" size="sm">
                             Details
                           </Button>

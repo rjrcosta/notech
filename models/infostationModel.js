@@ -88,8 +88,6 @@ export const createInfoStation = async (formReqBody) => {
   return inserted;
 };
 
-
-
 // Update an info station
 export const updateInfoStation = async (id, name, latitude, longitude) => {
   const { rows } = await pool.query(
@@ -105,6 +103,46 @@ export const deleteInfoStation = async (id) => {
   return { message: "Info station deleted" };
 };
 
+
+//Get InfoStation Data
+export const getInfostationDataByField = async (fieldId) =>{
+  console.log('fieldId in get infodata', fieldId)
+  const {rows} = await pool.query(
+    `SELECT
+      station_id, air_temperature, air_humidity,
+      soil_temperature, soil_moisture, size_average,
+      latitude, longitude, battery_voltage, signal_strength
+      FROM sensor_readings
+      WHERE field_id = $1`,
+    [fieldId]
+  );
+  return rows
+}
+
+
+//Get Last reading Infostations by field ID
+export const getLastReadingInfostationsByFieldId = async (fieldId) =>{
+  console.log('last info Model ', fieldId)
+  const {rows} = await pool.query(
+    `SELECT DISTINCT ON (station_id)
+    station_id,
+    air_temperature,
+    air_humidity,
+    soil_temperature,
+    soil_moisture,
+    size_average,
+    latitude,
+    longitude,
+    battery_voltage,
+    signal_strength
+  FROM sensor_readings
+  WHERE field_id = $1
+  ORDER BY station_id, reading_time DESC`
+  ,
+    [fieldId]
+  );
+  return rows
+}
 
 // Get wifi info stations
 // This function scans for available WiFi networks and returns the list of networks found.

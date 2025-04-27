@@ -1,90 +1,89 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import {
+  MapContainer,
+  TileLayer,
+  FeatureGroup,
+  GeoJSON,
+  CircleMarker,
+  useMap,
+  Popup,
+} from "react-leaflet";
+import { EditControl } from "react-leaflet-draw";
 import {
   Card,
   CardHeader,
-  CardFooter,
   CardBody,
+  CardFooter,
   Typography,
   Dialog,
-  DialogBody,
   DialogHeader,
+  DialogBody,
   DialogFooter,
+  Button,
   IconButton,
-  Switch,
   Select,
   Option,
-  Button,
+  Switch,
 } from "@material-tailwind/react";
-import {
-  statisticsCardsData,
-  statisticsChartsData,
-  projectsTableData,
-  ordersOverviewData,
-} from "@/data";
-import { CheckCircleIcon, ClockIcon } from "@heroicons/react/24/solid";
-import { StatisticsCard } from "@/widgets/cards";
-import { StatisticsChart } from "@/widgets/charts";
-import { Link, useLocation } from "react-router-dom";
 import { XMarkIcon } from "@heroicons/react/24/outline";
-import { TileLayer, MapContainer, FeatureGroup, GeoJSON, useMap, CircleMarker, Marker, Popup } from "react-leaflet";
-import { EditControl } from "react-leaflet-draw";
-import 'leaflet/dist/leaflet.css';
-import 'leaflet-draw/dist/leaflet.draw.css';
-import { useEffect, useState, useRef } from "react";
+import { StatisticsCard } from "@/widgets/cards";
+
+import HeatmapSwitcher from "@/widgets/components/HeatmapSwitcher";
+import HeatmapLayer from "@/widgets/components/heatmap";
+import { normalizeMultipleHeatmapData } from "@/widgets/components/normalizeHeatmapData";
 import { sensorTypeData } from "@/data/sensor-type-data.js";
+import { statisticsCardsData } from "@/data";
+
+import "leaflet/dist/leaflet.css";
+import "leaflet-draw/dist/leaflet.draw.css";
 
 export function FieldDetails() {
-  // const [sensors, setSensors] = useState([]); // State to store sensors data
   const location = useLocation();
-  const fieldId = location.state?.fieldId; // Get the fieldId from the location state
-  const fieldArea = location.state?.fieldArea // Get the polygon from the location state
+  const fieldId = location.state?.fieldId;
+  const fieldArea = location.state?.fieldArea;
 
-  console.log('Polygon from location state', fieldArea)
-  console.log("Field ID from location state:", fieldId); // Log the fieldId to check if it's being passed correctly
-
-  const [field, setField] = useState([]);
+  // State
+  const [openDialog, setOpenDialog] = useState(false);
+  const [infostations, setInfostations] = useState([]);
+  const [sensorData, setSensorData] = useState([]);
+  const [lastSensorData, setLastSensorData] = useState([]);
 
   const [sensorFormData, setSensorFormData] = useState({
     quantity: "",
-    fieldId: fieldId,
-    polygon: fieldArea
+    fieldId,
+    polygon: fieldArea,
   });
 
-  // Handle the creation of a polygon
-  const handlePolygonCreated = (e) => {
-    const geojson = e.layer.toGeoJSON();
-    setPolygonGeoJSON(geojson);
-    setSensorFormData((prev) => ({ ...prev, area: geojson })); // Update formData with the new polygon
-    console.log("formData:", sensorFormData); // Log the created polygon
-    console.log("Polygon created:", geojson); // Log the created polygon
-  };
-  // Handle input changes for the form fields
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-  // Add this helper if using Select from Material Tailwind
+  const [activeHeatmap, setActiveHeatmap] = useState("temperature");
+
+  const [temperatureData, setTemperatureData] = useState([]);
+  const [humidityData, setHumidityData] = useState([]);
+  const [soilHumidity, setSoilHumidity] = useState([]);
+  const [soilTemperature, setSoilTemperature] = useState([]);
+  const [averageFruitSize, setAverageFruitSize] = useState([]);
+  const [signalStrengthData, setSignalStrengthData] = useState([]);
+
+  // Handlers
+  const handleDialogToggle = () => setOpenDialog(!openDialog);
+
   const handleSelectChange = (value) => {
-    console.log("Selected quantity:", value); // Log the selected crop_id
     setSensorFormData((prev) => ({ ...prev, quantity: parseInt(value) }));
   };
 
-  // Handle form submission
+  const handlePolygonCreated = (e) => {
+    const geojson = e.layer.toGeoJSON();
+    setSensorFormData((prev) => ({ ...prev, polygon: geojson }));
+  };
+
   const handleSubmitInfoStations = async (e) => {
     e.preventDefault();
-    console.log("Form submitted!"); // Log to check if the function is called
-    console.log("Form data:", sensorFormData); // Log the form data to check its structure
-
     try {
       const payload = {
         fieldId: sensorFormData.fieldId,
         fieldArea: sensorFormData.polygon,
-        quantity: sensorFormData.quantity
+        quantity: sensorFormData.quantity,
       };
-
-      console.log("Payload to send:", payload); // Log the payload to check its structure
-
-      // Send to backend using fetch
       const response = await fetch(`http://localhost:5000/infostations/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -92,179 +91,130 @@ export function FieldDetails() {
         body: JSON.stringify({ payload }),
       });
 
-      // Read JSON once
-      const data = await response.json();
-      console.log("Data from api response in filds creation frontend:", data); // Log the response data
-
       if (!response.ok) throw new Error("Server error");
 
-      console.log("Field saved successfully!");
+      await response.json();
+      console.log("Info stations added!");
+      handleDialogToggle();
     } catch (err) {
       console.error(err);
-      alert("Error saving field");
+      alert("Error saving info stations");
     }
   };
 
-  //Get infostations to show on map
-  const [infostations, setInfostations] = useState([]);
-
+  // Fetching Data
   useEffect(() => {
     const fetchStations = async () => {
-      const res = await fetch(`http://localhost:5000/infostations/${fieldId}`); // Adjust as needed
+      const res = await fetch(`http://localhost:5000/infostations/${fieldId}`);
       const data = await res.json();
       setInfostations(data);
     };
 
+    const fetchSensorData = async () => {
+      const res = await fetch(`http://localhost:5000/infostations/data/${fieldId}`);
+      const data = await res.json();
+      setSensorData(data);
+    };
+
     fetchStations();
+    fetchSensorData();
   }, [fieldId]);
 
-  // useEffect(() => {
-  //   async function fetchSensors() {
-  //     try {
-  //       const res = await fetch(`http://localhost:5000/infostations/stations-wifi`, {
-  //         method: 'POST',
-  //         credentials: 'include',
-  //       });
-  //       const infoStationsSensors = await res.json();
-  //       console.log("Sensors data:", infoStationsSensors); // Log the sensors data to check if it's being fetched correctly
-  //     }
-  //     catch (err) {
-  //       console.error("Failed to fetch sensors", err);
-  //     }
-  //   }
+  useEffect(() => {
+    const fetchLastSensorData = async () => {
+      const res = await fetch(`http://localhost:5000/infostations/data/lastreading/${fieldId}`);
+      const data = await res.json();
+      setLastSensorData(data);
 
-  //   fetchSensors();
-  // }, []); // Add map to dependencies
+      setTemperatureData(data.map((s) => [s.latitude, s.longitude, s.air_temperature]));
+      setHumidityData(data.map((s) => [s.latitude, s.longitude, s.air_humidity]));
+      setSoilHumidity(data.map((s) => [s.latitude, s.longitude, s.soil_moisture]));
+      setSoilTemperature(data.map((s) => [s.latitude, s.longitude, s.soil_temperature]));
+      setAverageFruitSize(data.map((s) => [s.latitude, s.longitude, s.size_average]));
+      setSignalStrengthData(data.map((s) => [s.latitude, s.longitude, s.signal_strength]));
+    };
 
-  //define the geojson variable to be used in the FitBounds component
-  const geojson = fieldArea
-  console.log("GeoJSON data:", geojson); // Log the GeoJSON data to check if it's being fetched correctly
+    fetchLastSensorData();
+    const interval = setInterval(fetchLastSensorData, 60000);
+    return () => clearInterval(interval);
+  }, [fieldId]);
 
+  // Normalize Heatmap Data
+  const normalized = normalizeMultipleHeatmapData({
+    temperatureData,
+    humidityData,
+    soilHumidity,
+    soilTemperature,
+    averageFruitSize,
+    signalStrengthData,
+  });
+
+  console.log('normalized', normalized)
+
+  const normalizedTemperatureData = normalized.temperatureData;
+  const normalizedHumidityData = normalized.humidityData;
+  const normalizedSoilMoistureData = normalized.soilMoistureData;
+  const normalizedSoilTemperatureData = normalized.soilTemperatureData;
+  const normalizedSizeAverageData = normalized.sizeAverageData;
+  const normalizedSignalStrengthData = normalized.signalStrengthData;
+
+  console.log('normalize temperature', normalized.temperatureData)
+
+  // Helpers
   const FitBounds = ({ geojson }) => {
     const map = useMap();
-
     useEffect(() => {
       if (!geojson) return;
       const layer = L.geoJSON(geojson);
       map.fitBounds(layer.getBounds());
     }, [geojson, map]);
-
     return null;
   };
 
-  //Create new field button
-  const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(!open);
-
-  console.log("Fields data:", sensorFormData); // Log the fields data to check if it's being fetched correctly
+  const heatmapTypes = [
+    { key: "temperature", label: "Temperature" },
+    { key: "humidity", label: "Humidity" },
+    { key: "soilMoisture", label: "Soil Moisture" },
+    { key: "soilTemperature", label: "Soil Temperature" },
+    { key: "sizeAverage", label: "Size Average" },
+    { key: "signalStrength", label: "Signal Strength" },
+  ];
 
   return (
     <div className="mt-12 mb-8 flex flex-col gap-12">
-
       <Card>
         <CardHeader variant="gradient" color="white" className="mb-8 flex items-center justify-between p-6">
           <div>
-            <Typography variant="h6" color="blue-gray" className="mb-2">
+            <Typography variant="h6" color="blue-gray">
               Field Detail
             </Typography>
-            <Typography
-              variant="small"
-              className="font-normal text-blue-gray-500"
-            >
+            <Typography variant="small" className="font-normal text-blue-gray-500">
               Detail information about this field
             </Typography>
           </div>
-
-          <Button onClick={handleOpen} variant="gradient">
+          <Button onClick={handleDialogToggle} variant="gradient">
             Add Sensor Stations
           </Button>
-          <Dialog size="sm" open={open} handler={handleOpen} className="p-4 overflow-auto max-h-screen">
-            <form onSubmit={handleSubmitInfoStations}>
-              <DialogHeader className="relative m-0 block">
-                <Typography variant="h4" color="blue-gray">
-                  Add Sensor Stations
-                </Typography>
-                <Typography className="mt-1 font-normal text-gray-600">
-                  Select the number and type of info Stations.
-                </Typography>
-                <IconButton
-                  size="sm"
-                  variant="text"
-                  className="!absolute right-3.5 top-3.5"
-                  onClick={handleOpen}
-                >
-                  <XMarkIcon className="h-4 w-4 stroke-2" />
-                </IconButton>
-              </DialogHeader>
-              <DialogBody className="space-y-4 pb-6 overflow-auto">
-
-                <div>
-                  <Typography
-                    variant="small"
-                    color="blue-gray"
-                    className="mb-2 text-left font-medium"
-                  >
-                    Quantity
-                  </Typography>
-                  <Select
-                    name="quantity"
-                    id="quantity"
-                    value={sensorFormData.quantity}
-                    onChange={handleSelectChange}
-                    className="!border-[1.5px] !border-blue-gray-200/90 !border-t-blue-gray-200/90 bg-white text-gray-600 ring-4 ring-transparent focus:!border-primary focus:!border-t-blue-gray-900 group-hover:!border-primary">
-                    {[...Array(10)].map((_, sensorCount) => (
-                      <Option key={sensorCount + 1} value={(sensorCount + 1).toString()}>
-                        {sensorCount + 1}
-                      </Option>
-                    ))}
-                  </Select>
-                </div>
-
-                <div>
-                  <Typography variant="h6" color="blue-gray" className="mb-3">
-                    Sensor options
-                  </Typography>
-                  <div className="flex flex-col gap-12">
-                    {sensorTypeData.map(({ title, options }) => (
-                      <div key={title}>
-                        <Typography className="mb-4 block text-xs font-semibold uppercase text-blue-gray-500">
-                          {title}
-                        </Typography>
-                        <div className="flex flex-col gap-6">
-                          {options.map(({ checked, label }) => (
-                            <Switch
-                              key={label}
-                              id={label}
-                              label={label}
-                              defaultChecked={checked}
-                              labelProps={{
-                                className: "text-sm font-normal text-blue-gray-500",
-                              }}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-              </DialogBody>
-              <DialogFooter>
-                <Button type="submit" className="ml-auto" onClick={handleOpen}>
-                  Add InfoStations
-                </Button>
-              </DialogFooter>
-            </form>
-          </Dialog>
-
         </CardHeader>
 
         <CardBody>
           <div className="mb-6 grid grid-cols-1 gap-y-12 gap-x-6 md:grid-cols-1 xl:grid-cols-2">
-            <MapContainer center={[41.355001, -8.627920]} zoom={13} scrollWheelZoom={true} className="md:h-[500px]">
+            <MapContainer center={[41.355001, -8.627920]} zoom={13} scrollWheelZoom className="md:h-[500px]">
+              <TileLayer
+                attribution='&copy; StadiaMaps contributors'
+                url="https://tiles.stadiamaps.com/tiles/alidade_satellite/{z}/{x}/{y}{r}.jpg"
+              />
+
+              {fieldArea && (
+                <>
+                  <GeoJSON data={fieldArea} style={{ color: "blue", weight: 2 }} />
+                  <FitBounds geojson={fieldArea} />
+                </>
+              )}
+
               <FeatureGroup>
                 <EditControl
-                  position='topright'
+                  position="topright"
                   onCreated={handlePolygonCreated}
                   draw={{
                     rectangle: false,
@@ -277,37 +227,51 @@ export function FieldDetails() {
                 />
               </FeatureGroup>
 
-              <TileLayer
-                attribution='&copy; <a href="https://tiles.stadiamaps.com/tiles/alidade_satellite/{z}/{x}/{y}{r}.{ext}">StadiaMaps</a> contributors'
-                url="https://tiles.stadiamaps.com/tiles/alidade_satellite/{z}/{x}/{y}{r}.jpg"
-                crossOrigin="anonymous"
+              <HeatmapSwitcher
+                heatmapTypes={heatmapTypes}
+                activeHeatmap={activeHeatmap}
+                setActiveHeatmap={setActiveHeatmap}
               />
 
-              {fieldArea && (
-                <>
-                  <GeoJSON data={fieldArea} style={{ color: "blue", weight: 2 }} />
-                  {/* Auto-fit bounds */}
-                  <FitBounds geojson={fieldArea} />
-                </>
-              )} 
-              {infostations.map((station) => (
-                <CircleMarker
-                  key={station.id}
-                  center={[station.latitude, station.longitude]}
-                  radius={5} // You can adjust this (e.g., 3 for a smaller dot)
-                  color="#2563eb" // Tailwind's blue-600
-                  fillColor="#2563eb"
-                  fillOpacity={0.9}
-                >
-                  <Popup>
-                    <strong>{station.name}</strong><br />
-                    Lat: {station.latitude}<br />
-                    Lng: {station.longitude}
-                  </Popup>
-                </CircleMarker>
-              ))}
-            </MapContainer>
+              {infostations.map((station) => {
+                const sensor = lastSensorData.find((s) => s.station_id === station.id);
+                return (
+                  <CircleMarker
+                    key={station.id}
+                    center={[station.latitude, station.longitude]}
+                    radius={5}
+                    color="#2563eb"
+                    fillOpacity={0.9}
+                  >
+                    <Popup>
+                      <strong>{station.name}</strong><br />
+                      {sensor ? (
+                        <>
+                          Temp: {sensor.air_temperature}°C<br />
+                          Humidity: {sensor.air_humidity}%<br />
+                          Soil Temp: {sensor.soil_temperature}°C<br />
+                          Soil Moisture: {sensor.soil_moisture}%<br />
+                          Size Average: {sensor.size_average}<br />
+                          Battery: {sensor.battery_voltage}V<br />
+                          Signal: {sensor.signal_strength} dBm<br />
+                          Lat: {station.latitude}<br />
+                          Lng: {station.longitude}
+                        </>
+                      ) : (
+                        <p>No sensor data available.</p>
+                      )}
+                    </Popup>
+                  </CircleMarker>
+                );
+              })}
 
+              {activeHeatmap === "temperature" && <HeatmapLayer points={normalizedTemperatureData} />}
+              {activeHeatmap === "humidity" && <HeatmapLayer points={normalizedHumidityData} />}
+              {activeHeatmap === "soilMoisture" && <HeatmapLayer points={normalizedSoilMoistureData} />}
+              {activeHeatmap === "soilTemperature" && <HeatmapLayer points={normalizedSoilTemperatureData} />}
+              {activeHeatmap === "sizeAverage" && <HeatmapLayer points={normalizedSizeAverageData} />}
+              {activeHeatmap === "signalStrength" && <HeatmapLayer points={normalizedSignalStrengthData} />}
+            </MapContainer>
             <div className=" grid gap-y-10 gap-x-6 md:grid-cols-1 xl:grid-cols-2">
               {statisticsCardsData.map(({ icon, title, footer, ...rest }) => (
                 <StatisticsCard
@@ -327,29 +291,60 @@ export function FieldDetails() {
               ))}
             </div>
           </div>
-
-          <div className="mb-6 grid grid-cols-1 gap-y-12 gap-x-6 md:grid-cols-2 xl:grid-cols-3">
-            {statisticsChartsData.map((props) => (
-              <StatisticsChart
-                key={props.title}
-                {...props}
-                footer={
-                  <Typography
-                    variant="small"
-                    className="flex items-center font-normal text-blue-gray-600"
-                  >
-                    <ClockIcon strokeWidth={2} className="h-4 w-4 text-blue-gray-400" />
-                    &nbsp;{props.footer}
-                  </Typography>
-                }
-              />
-            ))}
-          </div>
-
         </CardBody>
       </Card>
+
+      {/* Add Sensor Dialog */}
+      <Dialog size="sm" open={openDialog} handler={handleDialogToggle}>
+        <form onSubmit={handleSubmitInfoStations}>
+          <DialogHeader className="relative">
+            <Typography variant="h4" color="blue-gray">
+              Add Sensor Stations
+            </Typography>
+            <IconButton
+              size="sm"
+              variant="text"
+              className="!absolute right-3.5 top-3.5"
+              onClick={handleDialogToggle}
+            >
+              <XMarkIcon className="h-4 w-4 stroke-2" />
+            </IconButton>
+          </DialogHeader>
+
+          <DialogBody className="space-y-4 pb-6">
+            <Typography variant="small" color="blue-gray" className="text-left font-medium">
+              Quantity
+            </Typography>
+            <Select value={sensorFormData.quantity} onChange={handleSelectChange}>
+              {[...Array(10)].map((_, index) => (
+                <Option key={index + 1} value={(index + 1).toString()}>
+                  {index + 1}
+                </Option>
+              ))}
+            </Select>
+
+            <Typography variant="h6" color="blue-gray" className="mt-4 mb-2">
+              Sensor options
+            </Typography>
+            {sensorTypeData.map(({ title, options }) => (
+              <div key={title}>
+                <Typography className="mb-4 text-xs font-semibold uppercase text-blue-gray-500">
+                  {title}
+                </Typography>
+                {options.map(({ label, checked }) => (
+                  <Switch key={label} id={label} label={label} defaultChecked={checked} />
+                ))}
+              </div>
+            ))}
+          </DialogBody>
+
+          <DialogFooter>
+            <Button type="submit" variant="gradient">
+              Add InfoStations
+            </Button>
+          </DialogFooter>
+        </form>
+      </Dialog>
     </div>
   );
 }
-
-export default FieldDetails

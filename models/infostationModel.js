@@ -144,6 +144,28 @@ export const getLastReadingInfostationsByFieldId = async (fieldId) =>{
   return rows
 }
 
+//Get Last reading Infostations by field ID
+export const getMonthsReadingsInfostationsByFieldId = async (fieldId) =>{
+  console.log('Months info Model ', fieldId)
+  const {rows} = await pool.query(
+    `SELECT DISTINCT ON (station_id)
+    station_id,
+    air_temperature,
+    air_humidity,
+    soil_temperature,
+    soil_moisture,
+    size_average,
+    battery_voltage,
+    signal_strength
+  FROM sensor_readings
+  WHERE field_id = $1
+  ORDER BY station_id, reading_time DESC`
+  ,
+    [fieldId]
+  );
+  return rows
+}
+
 // Get wifi info stations
 // This function scans for available WiFi networks and returns the list of networks found.
 export const wifiInfoStations = async () => {

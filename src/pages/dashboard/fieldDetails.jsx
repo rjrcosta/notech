@@ -29,11 +29,23 @@ import {
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { StatisticsCard } from "@/widgets/cards";
 
+import UploadPhotoDialog from "@/widgets/components/UploadPhotoDialog";
+import CameraCapture from "@/widgets/components/CameraCapture"
 import HeatmapSwitcher from "@/widgets/components/HeatmapSwitcher";
 import HeatmapLayer from "@/widgets/components/heatmap";
+import { StatisticsChart } from "@/widgets/charts";
+import {
+  statisticsCardsData,
+  statisticsChartsData,
+  projectsTableData,
+  ordersOverviewData,
+} from "@/data";
+import { CheckCircleIcon, ClockIcon } from "@heroicons/react/24/solid";
 import { normalizeMultipleHeatmapData } from "@/widgets/components/normalizeHeatmapData";
 import { sensorTypeData } from "@/data/sensor-type-data.js";
-import { statisticsCardsData } from "@/data";
+
+import Camera from 'react-html5-camera-photo';
+import 'react-html5-camera-photo/build/css/index.css';
 
 import "leaflet/dist/leaflet.css";
 import "leaflet-draw/dist/leaflet.draw.css";
@@ -44,10 +56,17 @@ export function FieldDetails() {
   const fieldArea = location.state?.fieldArea;
 
   // State
+  // const [sensorData, setSensorData] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
+  const [openCamera, setCameraDialog] = useState(false);
+  const [openDialogUpload, setopenDialogUpload] = useState(false);
   const [infostations, setInfostations] = useState([]);
-  const [sensorData, setSensorData] = useState([]);
   const [lastSensorData, setLastSensorData] = useState([]);
+
+  //Photos
+  const [photoFile, setPhotoFile] = useState(null);
+  const [photoLatLng, setPhotoLatLng] = useState(null);
+  const [photoModalOpen, setPhotoModalOpen] = useState(false);
 
   const [sensorFormData, setSensorFormData] = useState({
     quantity: "",
@@ -66,6 +85,7 @@ export function FieldDetails() {
 
   // Handlers
   const handleDialogToggle = () => setOpenDialog(!openDialog);
+  const handleCameraDialog = () => setCameraDialog(!openCamera);
 
   const handleSelectChange = (value) => {
     setSensorFormData((prev) => ({ ...prev, quantity: parseInt(value) }));
@@ -110,14 +130,14 @@ export function FieldDetails() {
       setInfostations(data);
     };
 
-    const fetchSensorData = async () => {
-      const res = await fetch(`http://localhost:5000/infostations/data/${fieldId}`);
-      const data = await res.json();
-      setSensorData(data);
-    };
+    // const fetchSensorData = async () => {
+    //   const res = await fetch(`http://localhost:5000/infostations/data/${fieldId}`);
+    //   const data = await res.json();
+    //   setSensorData(data);
+    // };
 
     fetchStations();
-    fetchSensorData();
+    // fetchSensorData();
   }, [fieldId]);
 
   useEffect(() => {
@@ -178,6 +198,7 @@ export function FieldDetails() {
     { key: "soilTemperature", label: "Soil Temperature" },
     { key: "sizeAverage", label: "Size Average" },
     { key: "signalStrength", label: "Signal Strength" },
+    { key: "photosData", label: "Photos Data" }
   ];
 
   return (
@@ -192,9 +213,20 @@ export function FieldDetails() {
               Detail information about this field
             </Typography>
           </div>
-          <Button onClick={handleDialogToggle} variant="gradient">
-            Add Sensor Stations
-          </Button>
+          <div >
+            {/* Upload Photos Button and Modal */}
+            <UploadPhotoDialog fieldId={fieldId} />
+
+            <Button variant="outlined" className="mx-2" onClick={handleCameraDialog}>
+              Take Photos
+            </Button>
+            <Dialog size="sm" open={openCamera} handler={handleCameraDialog}>
+              <CameraCapture fieldId={fieldId} />
+            </Dialog>
+            <Button onClick={handleDialogToggle} variant="gradient" className="mx-2">
+              Add Sensor Stations
+            </Button>
+          </div>
         </CardHeader>
 
         <CardBody>
@@ -219,7 +251,7 @@ export function FieldDetails() {
                   draw={{
                     rectangle: false,
                     polyline: false,
-                    polygon: true,
+                    polygon: false,
                     circle: false,
                     marker: false,
                     circlemarker: false,
@@ -271,7 +303,9 @@ export function FieldDetails() {
               {activeHeatmap === "soilTemperature" && <HeatmapLayer points={normalizedSoilTemperatureData} />}
               {activeHeatmap === "sizeAverage" && <HeatmapLayer points={normalizedSizeAverageData} />}
               {activeHeatmap === "signalStrength" && <HeatmapLayer points={normalizedSignalStrengthData} />}
+              {activeHeatmap === "photosData" && <HeatmapLayer points={normalizedSignalStrengthData} />}
             </MapContainer>
+
             <div className=" grid gap-y-10 gap-x-6 md:grid-cols-1 xl:grid-cols-2">
               {statisticsCardsData.map(({ icon, title, footer, ...rest }) => (
                 <StatisticsCard
@@ -345,6 +379,23 @@ export function FieldDetails() {
           </DialogFooter>
         </form>
       </Dialog>
+      {statisticsChartsData.map((props) => (
+        <StatisticsChart
+          key={props.title}
+          {...props}
+          footer={
+            <Typography
+              variant="small"
+              className="flex items-center font-normal text-blue-gray-600"
+            >
+              <ClockIcon strokeWidth={2} className="h-4 w-4 text-blue-gray-400" />
+              &nbsp;{props.footer}
+            </Typography>
+          }
+        />
+      ))}
+
+
     </div>
   );
 }

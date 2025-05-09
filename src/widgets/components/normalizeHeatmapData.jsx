@@ -1,6 +1,3 @@
-// normalizeHeatmapData.js
-// normalizeHeatmapData.js
-
 /**
  * Normalize individual heatmap data points
  * @param {Array} data - Array of [lat, lng, value] points

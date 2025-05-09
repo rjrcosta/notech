@@ -10,6 +10,10 @@ import fieldRoutes from "./routes/fieldRoutes.js";
 import infostationRoutes from "./routes/infostationRoutes.js";  
 import authRoutes from "./routes/authRoutes.js"; // Import auth routes
 import cookieParser from 'cookie-parser';
+import uploadRoutes from "./routes/uploadModel.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config(); // Load environment variables
 
@@ -42,6 +46,11 @@ app.use("/crops", cropRoutes);
 app.use("/fields", fieldRoutes);
 app.use("/infostations", infostationRoutes);
 app.use("/auth", authRoutes);
+
+// Serve images statically if needed
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/photos", uploadRoutes);
+
 
 app.get("/", (req, res) => {
   res.send("API is running...");

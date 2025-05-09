@@ -53,8 +53,8 @@ export function SignIn() {
   };
 
   return (
-    <section className="m-8 flex gap-4">
-      <div className="w-full lg:w-3/5 mt-24">
+    <section className="h-screen w-screen overflow-hidden flex">
+      <div className="w-full lg:w-3/5 mt-24 ">
         <div className="text-center">
           <Typography variant="h2" className="font-bold mb-4">Sign In</Typography>
           <Typography variant="paragraph" color="blue-gray" className="text-lg font-normal">Enter your email and password to Sign In.</Typography>
@@ -116,10 +116,10 @@ export function SignIn() {
           </Typography>
         </form>
       </div>
-      <div className="w-2/5 h-full hidden lg:block">
+      <div className="w-1/2 hidden lg:block flex items-center justify-center">
         <img
-          src="/img/pattern.png"
-          className="h-full w-full object-cover rounded-3xl"
+          src="/img/signInImage.jpg"
+          className="h-full w-full object-cover"
         />
       </div>
     </section>

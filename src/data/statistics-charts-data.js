@@ -73,7 +73,7 @@ const completedTaskChart = {
     ...chartsConfig,
     colors: ["#388e3c"],
     stroke: {
-      lineCap: "round",
+      lineCap: "square",
     },
     markers: {
       size: 5,

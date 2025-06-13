@@ -5,7 +5,7 @@ import fs from "fs";
 import { fileURLToPath } from "url";
 import { landingAi } from "../models/LandinAIModel.js";
 
-// Required for ES modules to work with __dirname
+ // Required for ES modules to work with __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 

@@ -11,6 +11,8 @@ import infostationRoutes from "./routes/infostationRoutes.js";
 import authRoutes from "./routes/authRoutes.js"; // Import auth routes
 import cookieParser from 'cookie-parser';
 import uploadRoutes from "./routes/uploadModel.js";
+import sensorupload from "./routes/sensorUploadModel.js"
+import chunkimages from "./routes/chunkimages.js"
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,6 +24,9 @@ app.use(cors({
   origin: 'http://localhost:5173', // Allow requests from this origin
   credentials: true // Allow credentials to be included
 }));
+
+//Before json and urlencoded because we are using it to receive binary data
+app.use("/photos", chunkimages);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -49,8 +54,11 @@ app.use("/auth", authRoutes);
 
 // Serve images statically if needed
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-app.use("/photos", uploadRoutes);
+app.use("/photos", uploadRoutes, sensorupload, chunkimages);
 
+app.use('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'build/index.html'));
+});
 
 app.get("/", (req, res) => {
   res.send("API is running...");
@@ -58,4 +66,4 @@ app.get("/", (req, res) => {
 
 const PORT = process.env.PORT || 5000; 
 const Server_URL = process.env.DB_HOST;
-app.listen(PORT, () => console.log(`Server running on port ${PORT} and with url ${Server_URL}`));
+app.listen(PORT,'0.0.0.0', () => console.log(`Server running on port ${PORT} and with url ${Server_URL}`));
